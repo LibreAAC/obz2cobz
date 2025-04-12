@@ -1,39 +1,21 @@
-
 #include "img.hpp"
 #include "list.hpp"
+#include <cmath>
+#include "cobz.hpp"
 
-struct ivec2 { int x,y; };
-struct Cell;
-struct Board;
-struct Rect
-{
-  float x,y,w,h;
-  int spritesheet_id;
-  bool locked;
-  void serialize(Stream s)
-  { s << spritesheet_id << x << y << w << h; }
-};
+void Rect::serialize(Stream s)
+{ s << spritesheet_id << x << y << w << h; }
+bool Fit::could_contain(Rect rsmol)
+{ return rect.w >= rsmol.w && rect.h >= rsmol.h; }
 
-struct Obj
-{
-  string obz_tex_id;
-  string obz_board_id;
-  ImageData img;
-  Rect rect;
-};
-struct Fit
-{
-  Rect rect;
-  int obj_idx;
-  bool could_contain(Rect rsmol)
-  { return rect.w >= rsmol.w && rect.h >= rsmol.h; }
-};
 struct CompiledOBZ
 {
   list<Obj> textures;
   list<Board> boards;
   ivec2 gen_spritesheet_precursors(list<Obj*>& objs)
   {
+    // TODO: ROTATE THE ALGORITHM BECAUSE PASTING LONG LINES IS FASTER
+    // THAN LONG COLUMNS (given currently implemented algorithms)
     int minw = 0;
     int maxw = 0;
     for (int i = 0; i < objs.len(); i++)
@@ -45,11 +27,11 @@ struct CompiledOBZ
       {
         objs[i]->rect.w = floorf(objs[i]->rect.w / 2);
         objs[i]->rect.h = floorf(objs[i]->rect.h / 2);
-        downscale_factor += 2;
+        downscale_factor++;
       }
       if (objs[i]->rect.w > maxw)
         maxw = objs[i]->rect.w;
-      objs[i]->img.down_scale_pow2(downscale_factor);
+      objs[i]->img.downscale_pow2(downscale_factor);
     }
     maxw *= 2;
     // yeah... im lazy...
@@ -121,19 +103,17 @@ struct CompiledOBZ
     return ssdims;
   }
 
-  ImageData gen_one_spritesheet(list<Obj*>& objs, ivec2 dims, int spritesheet_id)
+  void gen_one_spritesheet(ImageData& buffer, list<Obj*>& objs, ivec2 dims, int spritesheet_id)
   {
-    auto spritesheet = ImageData::init();
     for (int i = 0; i < objs.len(); i++)
     {
       assert(objs[i]->rect.spritesheet_id == -1);
       objs[i]->rect.spritesheet_id = spritesheet_id;
-      spritesheet.paste(objs[i]->img, objs[i]->rect.x, objs[i]->rect.y);
+      buffer.paste(objs[i]->img, objs[i]->rect.x, objs[i]->rect.y);
     }
-    return spritesheet;
   }
 
-  list<ImageData> gen_all_spritesheet();
+  void gen_and_serialize_all_spritesheet(Stream s);
 };
 
 struct Board
@@ -207,13 +187,13 @@ void Board::serialize(Stream s)
   }
 }
 
-list<ImageData> CompiledOBZ::gen_all_spritesheet()
+void CompiledOBZ::gen_and_serialize_all_spritesheet(Stream s)
 {
-  list<ImageData> spritesheets;
   list<Obj*> objs;
   ivec2 ssdims;
+  ImageData img;
+  img.init();
   objs.init();
-  spritesheets.init();
   for (int i = 0; i < boards.len(); i++)
   {
     objs.clear();
@@ -221,9 +201,12 @@ list<ImageData> CompiledOBZ::gen_all_spritesheet()
       if (textures[j].obz_board_id == boards[i].obz_id)
         objs.push(&textures[j]);
     ssdims = gen_spritesheet_precursors(objs);
-    spritesheets.push(gen_one_spritesheet(objs, ssdims, i));
+    gen_one_spritesheet(img, objs, ssdims, i);
+    img.serialize(s);
+    img.destroy();
+    // sadly, because of the way stbi works, we have to destroy the image
+    // and reallocate it everytime
   }
-  return spritesheets;
 }
 
 

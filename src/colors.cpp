@@ -1,6 +1,7 @@
 
 #include "list.hpp"
 #include "utils.hpp"
+#include "tables.hpp"
 float depercent(char* expr, float max)
 {
   const int len = str_len(expr);

@@ -1,6 +1,6 @@
 #include "utils.hpp"
+#include "tables.hpp"
 
-constexpr int SUPPORTED_IMAGE_EXT_COUNT = 11;
 const char* const SUPPORTED_IMAGE_EXT[SUPPORTED_IMAGE_EXT_COUNT] = {
   "png","jpg","jpeg","tga","bmp","psd","gif","hdr","pic","pnm","svg"
 };
@@ -12,7 +12,6 @@ bool is_image_ext_supported(const char* extension)
   return false;
 }
 
-constexpr int LEGACY_COLORS_COUNT = 148;
 const char* const LEGACY_COLOR_NAMES[LEGACY_COLORS_COUNT] = {
 "aliceblue",
 "antiquewhite",

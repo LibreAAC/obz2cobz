@@ -1,0 +1,7 @@
+include/*
+lib/*
+licenses/*
+temp/*
+bin/*
+compile_commands.json
+.cache/*

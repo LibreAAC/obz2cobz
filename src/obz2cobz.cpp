@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <raylib.h>
 const char* help =
 "Usage:\n"
 "obz2cobz.py <src>.obz <dst>.cobz\n"
@@ -21,14 +20,14 @@ void expect(bool cond, const char* const err_msg)
 {
   if (!cond)
   {
-    dblog(LOG_FATAL, "Expect failed: %s", err_msg);
+    printf("ERR: Expect failed: %s", err_msg);
     abort();
   }
 }
 void want(bool cond, const char* const warn_msg)
 {
   if (!cond)
-    dblog(LOG_WARNING, "%s", warn_msg);
+    printf("WARN: %s", warn_msg);
 }
 
 
