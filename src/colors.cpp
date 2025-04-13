@@ -1,5 +1,3 @@
-
-#include "list.hpp"
 #include "utils.hpp"
 #include "tables.hpp"
 float depercent(char* expr, float max)
@@ -20,26 +18,26 @@ u32 hexchar(char c)
   if (c >= 'a' && c <= 'f') return c - 'a' + 10;
   if (c >= 'A' && c <= 'F') return c - 'A' + 10;
   if (c >= '0' && c <= '9') return c - '0';
-  dblog(LOG_ERROR, "Invalid hexadecimal value: %c", c);
+  fprintf(stderr, "WARN: Invalid hexadecimal value: %c", c);
   return 0;
 }
 u32 rgba(u32 r, u32 g, u32 b, u32 a) { return (r << 24) | (g << 16) | (b << 8) | a; }
-u32 parse_color(string expr, u32 default_)
+u32 parse_color(char* expr, u32 default_)
 {
 #define FIND_NEXT_CHAR(IDX, CHAR) \
     while (expr[IDX] != CHAR && expr[IDX] != 0) IDX++; \
     if (expr[IDX] == 0) \
-    { dblog(LOG_WARNING, "Inavlid rgb color format."); return default_; }
+    { fprintf(stderr, "WARN: Inavlid rgb color format."); return default_; }
 #define READ_COLOR_COMP(COMP, NEXT_END) \
     FIND_NEXT_CHAR(comma, NEXT_END); \
     expr[comma] = 0; \
-    COMP = depercent(expr.data()+comma, 255); \
+    COMP = depercent(expr+comma, 255); \
     comma++;
 
-  const int len = expr.len();
+  const int len = str_len(expr);
   if (len == 0)
     return default_;
-  if (str_startswith(expr.data(), "rgb(") && str_endswith(expr.data(), ")"))
+  if (str_startswith(expr, "rgb(") && str_endswith(expr, ")"))
   {
     int comma = 4;
     u32 r,g,b;
@@ -49,7 +47,7 @@ u32 parse_color(string expr, u32 default_)
     return rgba(r,g,b,255);
   }
   else if (
-    str_startswith(expr.data(), "rgba(") && str_endswith(expr.data(), ")")
+    str_startswith(expr, "rgba(") && str_endswith(expr, ")")
   ) {
     int comma = 5;
     u32 r,g,b,a;
@@ -77,20 +75,20 @@ u32 parse_color(string expr, u32 default_)
     }
     else
     {
-      dblog(
-        LOG_WARNING,
-        "Expected 6 or 8 digit hex color format, but got '%s'",
-        expr.data()
+      fprintf(
+        stderr,
+        "WARN: Expected 6 or 8 digit hex color format, but got '%s'",
+        expr
       );
       return default_;
     }
   }
   else
   {
-    const i64 legacy_color = u32_legacy_color(expr.data());
+    const i64 legacy_color = u32_legacy_color(expr);
     if (legacy_color != -1)
       return legacy_color;
-    dblog(LOG_WARNING, "Unknown color format: '%s'", expr.data());
+    fprintf(stderr, "WARN: Unknown color format: '%s'", expr);
     return default_;
   }
 }

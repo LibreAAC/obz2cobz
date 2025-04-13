@@ -32,7 +32,7 @@ struct ImageData
 };
 constexpr ImageData INVALID_IMAGE = {nullptr, 0, 0};
 ImageData load_img(
-  zip_file_t* z,
+  zip_t* z,
   const char* src,
   const char* const cell_name
 );

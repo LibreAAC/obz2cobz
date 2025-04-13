@@ -52,7 +52,8 @@ function inst_plutosvg()
     mv("plutosvg/source/*", "include/")
     mv("plutosvg/plutovg/include/plutovg.h", "include/")
     -- mv("plutosvg/build/plutovg/*.a", "include") -- reactivate this line if plutosvg.a is not enough
-    mv("plutosvg/build/*.so", "lib/")
+    mv("plutosvg/build/*.a", "lib/")
+    mv("plutosvg/build/plutovg/*.a", "lib/")
     mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
     rm("plutosvg")
   else

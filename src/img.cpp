@@ -38,17 +38,17 @@ ImageData ImageData::from(const char* filename)
   ImageData ret;
   int channels;
   ret._data = (rgba32*)stbi_load(filename, &ret._w, &ret._h, &channels, 4);
-  assert(channels == 4);
   return ret;
 }
 ImageData ImageData::from(ByteBuffer buffer)
 {
+  if (buffer.data == nullptr)
+    return INVALID_IMAGE;
   ImageData r;
   int channels;
   r._data = (rgba32*)stbi_load_from_memory(
     buffer.data, buffer.len, &r._w, &r._h, &channels, 4
   );
-  assert(channels == 4);
   return r;
 }
 void ImageData::destroy()

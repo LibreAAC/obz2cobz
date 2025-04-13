@@ -524,7 +524,6 @@ def parse_board(
     board.obz_id = str(obz_id) # different sources use different types, safer to use strings
     board.name = obf['name']
     board.parent = -1
-    celld: dict[str, Cell] = {}
 
     info(f"Loading board named {obf['name']}.")
     board.w = obf['grid']['columns']
