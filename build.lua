@@ -3,7 +3,7 @@ SRC = {"cobz.cpp", "colors.cpp", "img.cpp", "tables.cpp", "shared/utils.cpp",
   "shared/list.cpp", "cjson.cpp", "obz2cobz.cpp", "parser.cpp", "stbi.cpp",
   "stbiw.cpp"
 }
-CFLAGS = "-I include -I src/shared"
+CFLAGS = "-fsanitize=address -I include -I src/shared"
 LFLAGS = "-lpthread -L lib -lzip -lplutosvg -lplutovg -lcurl"
 
 

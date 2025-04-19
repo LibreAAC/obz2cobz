@@ -12,8 +12,6 @@ inline bool operator == (ivec2 a, ivec2 b)
 {
   return a.x == b.x && a.y == b.y;
 }
-struct Cell;
-struct Board;
 struct Rect
 {
   static constexpr int SERIALIZED_LENGTH = sizeof(float)*4 + sizeof(int);
@@ -44,6 +42,61 @@ struct Fit
   Rect rect;
   int obj_idx;
   bool could_contain(Rect rsmol);
+};
+
+struct COBZ;
+struct Cell
+{
+  string name;
+  int tex_id;
+  int child;
+  u32 background, border; // colors
+  list<string> actions;
+  string obz_child_id;
+  string obz_tex_id;
+  string obz_id;
+  ivec2 obz_xy;
+  static inline Cell init()
+  {
+    Cell self = {{}, -1, -1, 0, 0, {}, {}, {}, {}, {0,0}};
+    self.name.init();
+    self.actions.init();
+    self.obz_child_id.init();
+    self.obz_tex_id.init();
+    self.obz_id.init();
+    return self;
+  }
+  void set_child_obz(COBZ& cobz, string& obz_id);
+  void set_child_idx(COBZ& cobz, int idx);
+  void serialize(Stream s);
+  inline void destroy()
+  {
+    name.destroy();
+    actions.destroy();
+    obz_child_id.destroy();
+    obz_tex_id.destroy();
+    obz_id.destroy();
+  }
+};
+
+struct Board
+{
+  int w, h;
+  int parent_idx;
+  list<Cell> cells;
+  string name;
+  string obz_id;
+  static inline Board init() {
+    Board r = { 0, 0, -1, {}, {}, {} };
+    r.cells.init();
+    r.name.init();
+    r.obz_id.init();
+    return r;
+  }
+  inline void make_invalid() { w = h = -1; }
+  inline bool is_invalid() { return w <= 0 || h <= 0; }
+  void serialize(Stream s);
+  void destroy();
 };
 
 struct COBZ
@@ -79,57 +132,5 @@ struct COBZ
   void destroy();
 };
 
-struct Board
-{
-  int w, h;
-  int parent_idx;
-  list<Cell> cells;
-  string name;
-  string obz_id;
-  static inline Board init() {
-    Board r = { 0, 0, -1, {}, {}, {} };
-    r.cells.init();
-    r.name.init();
-    r.obz_id.init();
-    return r;
-  }
-  inline void make_invalid() { w = h = -1; }
-  inline bool is_invalid() { return w <= 0 || h <= 0; }
-  void serialize(Stream s);
-  void destroy();
-};
-struct Cell
-{
-  string name;
-  int tex_id;
-  int child;
-  u32 background, border; // colors
-  list<string> actions;
-  string obz_child_id;
-  string obz_tex_id;
-  string obz_id;
-  ivec2 obz_xy;
-  static inline Cell init()
-  {
-    Cell self = {{}, -1, -1, 0, 0, {}, {}, {}, {}, {0,0}};
-    self.name.init();
-    self.actions.init();
-    self.obz_child_id.init();
-    self.obz_tex_id.init();
-    self.obz_id.init();
-    return self;
-  }
-  void set_child_obz(COBZ& cobz, string& obz_id);
-  void set_child_idx(COBZ& cobz, int idx);
-  void serialize(Stream s);
-  inline void destroy()
-  {
-    name.destroy();
-    actions.destroy();
-    obz_child_id.destroy();
-    obz_tex_id.destroy();
-    obz_id.destroy();   
-  }
-};
 
 

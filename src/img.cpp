@@ -74,9 +74,11 @@ void ImageData::downscale_pow2(int factor)
 {
   if (_data == nullptr)
     return;
-  for (int y = 0; y < (_h>>factor)+(_h&1); y++)
+  if (factor == 0)
+    return;
+  for (int y = 0; y < (_h>>factor); y++)
   {
-    for (int x = 0; x < (_w>>factor)+(_w&1); x++)
+    for (int x = 0; x < (_w>>factor); x++)
     {
       _data[x+y*(_w>>factor)] = _data[(x<<factor)+(y<<factor)*_w];
     }

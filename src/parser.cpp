@@ -33,27 +33,30 @@ void insert_ordered(list<Cell>& cells, Cell new_cell)
 
 ivec2 find_position(const char* s, JSON node)
 {
+  assert(node.is(cJSON_Array));
   const int h = node.len();
   for (int y = 0; y < h; y++)
   {
-    JSON sub = {node.handle->child};
-    const int w = sub.len();
-    sub = sub.handle->child;
+    const int w = node[y].len();
     for (int x = 0; x < w; x++)
     {
-      if (sub.is(cJSON_Number))
+      const JSON j = node[y][x];
+      if (j.is(cJSON_Number))
       {
         const int stoi = atoi(s);
-        if (stoi == sub.to_int())
+        if (stoi == j.to_int())
           return {x, y};
+      }
+      else if (j.is(cJSON_NULL))
+      {
+        continue;
       }
       else
       {
-        assert(sub.is(cJSON_String));
-        if (str_eq(sub.to_str(), s))
+        assert(j.is(cJSON_String));
+        if (str_eq(j.to_str(), s))
           return {x, y};
       }
-      sub = sub.handle->next;
     }
   }
   return {-1, -1};
@@ -157,19 +160,29 @@ Board parse_board(
       }
       if (b.has("load_board"))
       {
-        JSON obj = manifest["paths"]["boards"], val;
-        char* key;
-        const char* ld_board_path = b["load_board"].to_str();
-        cJSON_ObjectForEach(key, val.handle, obj.handle)
+        if (b["load_board"].has("id"))
         {
-          if (str_eq(ld_board_path, val.to_str()))
-          {
-            c.obz_child_id = string::own(key);
-            val.handle->string = nullptr; // drop ownership of the key 
-          }
+          c.obz_child_id =
+            string::own(b["load_board"]["id"].drop().to_str());
         }
-        if (c.obz_child_id.data() == nullptr)
-          fprintf(stderr, "ERR: Could not find board with path %s", ld_board_path);
+        else
+        {
+          // TODO: handle other ways of linking boards
+          assert(b["load_board"].has("path"));
+          JSON obj = manifest["paths"]["boards"], val;
+          char* key;
+          const char* ld_board_path = b["load_board"]["path"].to_str();
+          cJSON_ObjectForEach(key, val.handle, obj.handle)
+          {
+            if (str_eq(ld_board_path, val.to_str()))
+            {
+              c.obz_child_id = string::own(key);
+              val.handle->string = nullptr; // drop ownership of the key 
+            }
+          }
+          if (c.obz_child_id.data() == nullptr)
+            fprintf(stderr, "ERR: Could not find board with path %s", ld_board_path);
+        }
       }
       if (b.has("actions"))
       {
@@ -187,7 +200,7 @@ Board parse_board(
       }
       else if (c.name.data() != nullptr)
       {
-        c.actions.push(string::ref(c.name.data()).prextend({(char*)"+",1,1}));
+        c.actions.push(string::ref(c.name.data()).prextend({(char*)"+ ",2,2}));
       }
       if (b.has("background_color"))
         c.background = parse_color(b["background_color"].to_str(), 0);
@@ -199,7 +212,7 @@ Board parse_board(
       else
         fprintf(
           stderr,
-      "WARN: Had to discard cell %s because it doesn't have a grid position.",
+  "WARN: Had to discard cell '%s' because it doesn't have a grid position.\n",
           c.name.data()
         );
     }
@@ -211,9 +224,24 @@ Board parse_board(
   return board;
 }
 
+
+// Do not hide your structures please. For the love of whoever you want.
+// Do not hide your structures.
+// Do. not. hide. your. structures.
+// struct shit2_t { void* _0; char _1[167800-8]; };
+struct shit3_t { void* _0; char _1[167936-8]; };
+struct shit_t { void* _0; char _1[112-8]; };
+struct zip_t_memequiv {
+  shit_t _0;
+  unsigned int _1;
+  shit3_t _2; 
+};
+
+constexpr int zip_t_sizeof = sizeof(zip_t_memequiv);
+
 struct Batch
 {
-  zip_t* z;
+  char z[zip_t_sizeof];
   JSON jason;
   View<Obj> inout;
   int th_id;
@@ -252,7 +280,7 @@ void* _image_preloader_batch(
     // fflush(stdout);
     auto obj = Obj::init();
     obj.obz_tex_id = string::ref(b.jason.handle->string).realloc();
-    obj.img = load_img(b.z, b.jason.to_str(), "<image preloading: no cell name>");
+    obj.img = load_img((zip_t*)&b.z, b.jason.to_str(), "<image preloading: no cell name>");
     b.inout[i] = obj;
     b.jason.handle = b.jason.handle->next;
   }
@@ -296,9 +324,10 @@ COBZ parse_file(const char *obz)
     zip_entry_openbyindex(z, manifest_index);
     {
       const u64 size = zip_entry_size(z);
-      obf_load.prealloc_at_least(size);
+      obf_load.prealloc_at_least(size+1);
       zip_entry_noallocread(z, obf_load.data<void>(), size);
       obf_load.set_len(size);
+      obf_load.data<char>()[size] = 0;
     }
     zip_entry_close(z);
     
@@ -345,7 +374,7 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
           {cobz.textures.data()+BATCH_SIZE*i,BATCH_SIZE,0};
         th.thread_batch.jason = ls_ptr;
         th.thread_batch.th_id = i;
-        th.thread_batch.z = z;
+        memcpy(th.thread_batch.z, z, zip_t_sizeof);
         th.thread.start(_image_preloader_batch, &th.thread_batch);
         for (int j = 0; j < BATCH_SIZE; j++)
           ls_ptr.handle = ls_ptr.handle->next;
@@ -354,7 +383,7 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       current_th_batch.inout = {cobz.textures.data()+BATCH_SIZE*(cpu_count-1),LEFT_OVER,0};
       current_th_batch.jason = ls_ptr;
       current_th_batch.th_id = cpu_count-1;
-      current_th_batch.z = z;
+      memcpy(current_th_batch.z, z, zip_t_sizeof);
       _image_preloader_batch(&current_th_batch);
       for (int i = 0; i < cpu_count-1; i++)
       {
@@ -370,7 +399,7 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       current_th_batch.inout = {cobz.textures.data(),total,0};
       current_th_batch.jason = {manifest["paths"]["images"].handle->child};
       current_th_batch.th_id = 0;
-      current_th_batch.z = z;
+      memcpy(current_th_batch.z, z, zip_t_sizeof);
       _image_preloader_batch(&current_th_batch);
     }
   }

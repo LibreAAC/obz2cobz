@@ -12,6 +12,7 @@ void Obj::destroy()
 {
   obz_tex_id.destroy();
   obz_board_id.destroy();
+  img.destroy();
 }
 
 ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
@@ -66,7 +67,6 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
         objs[i]->rect.h
       }, i
     });
-    printf("%f,%f,%f,%f\n", fits[-1].rect.x,fits[-1].rect.y,fits[-1].rect.w,fits[-1].rect.h);
   }
   
   ivec2 ssdims = {0,0}; // spritesheet dimensions
@@ -184,7 +184,7 @@ void COBZ::destroy()
 void Board::serialize(Stream s)
 {
   const i64 cell_count = cells.len();
-  s << w << h << parent_idx << cell_count;
+  s << w << h << parent_idx;
   ivec2 pos = {0,0};
   for (int i = 0; i < cell_count; i++)
   {
@@ -228,14 +228,16 @@ void Cell::serialize(Stream s)
   s << (i32&) tex_id;
   len = name.len()+1;
   fwrite(&len, sizeof(len), 1, s._f);
-  fwrite(name.data(), len, 1, s._f);
+  if (name.data())
+    fwrite(name.data(), len, 1, s._f);
   len = actions.len();
   fwrite(&len, sizeof(len), 1, s._f);
   for (i64 i = 0; i < len; i++)
   {
     i64 lena = actions[i].len();
     fwrite(&lena, sizeof(lena), 1, s._f);
-    fwrite(actions[i].data(), lena, 1, s._f);
+    if (actions[i].data())
+      fwrite(actions[i].data(), lena, 1, s._f);
   }
   s << (i32&) child;
   s << (u32&) background << (u32&) border;

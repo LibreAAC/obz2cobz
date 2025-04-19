@@ -48,7 +48,7 @@ struct JSON
   { assert(cJSON_IsNumber(handle)); return cJSON_GetNumberValue(handle); }
   bool to_bool() const
   { assert(cJSON_IsBool(handle)); return handle->type == cJSON_True; }
-  bool is(int cjson_type)
+  bool is(int cjson_type) const
   { return handle->type == cjson_type; }
   bool has(const char* key)
   { assert(cJSON_IsObject(handle)); return cJSON_HasObjectItem(handle, key); }
