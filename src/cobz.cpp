@@ -14,7 +14,7 @@ void Obj::destroy()
   obz_board_id.destroy();
 }
 
-ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs)
+ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
 {
   // TODO: ROTATE THE ALGORITHM BECAUSE PASTING LONG LINES IS FASTER
   // THAN LONG COLUMNS (given currently implemented algorithms)
@@ -38,8 +38,8 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs)
   maxw *= 2;
   // yeah... im lazy...
   // but who wants to write a sorting algorithm in big 2025 anyway ???
-  std::sort(objs.data(), objs.data()+(objs.len()+1), [](Obj* a, Obj* b){
-    if (a->rect.w == a->rect.h)
+  std::sort(objs.data(), objs.data()+(objs.len()), [](Obj* a, Obj* b){
+    if (a->rect.w == b->rect.w)
       return a->rect.h < b->rect.h;
     return a->rect.w < b->rect.w;
   });
@@ -52,9 +52,22 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs)
     objs[i]->rect.y = y;
     y += objs[i]->rect.h;
   }
-  list<Fit> fits;
-  fits.init();
-  fits.prealloc(objs.len());
+  list<Fit>& fits = fit_buf;
+  if (fits.cap() < objs.len())
+    fits.prealloc(objs.len());
+  fits.clear();
+  for (int i = 0; i < objs.len(); i++)
+  {
+    fits.push(Fit{
+      {
+        objs[i]->rect.w,
+        objs[i]->rect.y,
+        maxw - objs[i]->rect.w,
+        objs[i]->rect.h
+      }, i
+    });
+  }
+  
   ivec2 ssdims = {0,0}; // spritesheet dimensions
   int base_fixed = 0;
   for (int i = 1; i < objs.len(); i++)
@@ -112,7 +125,7 @@ void COBZ::gen_one_spritesheet(
 ) {
   for (int i = 0; i < objs.len(); i++)
   {
-    assert(objs[i]->rect.spritesheet_id == -1);
+    assert(objs[i]->rect.spritesheet_id == -1 || objs[i]->rect.spritesheet_id == spritesheet_id);
     objs[i]->rect.spritesheet_id = spritesheet_id;
     buffer.paste(objs[i]->img, objs[i]->rect.x, objs[i]->rect.y);
   }
@@ -125,10 +138,11 @@ void COBZ::gen_and_serialize_all_spritesheets(
 ) {
   const int board_count = boards.len();
   list<Obj*> objs;
+  list<Fit> fit_buf;
   ivec2 ssdims;
-  ImageData img;
-  img.init();
+  auto img = ImageData::init();
   objs.init();
+  fit_buf.init();
   for (int i = 0; i < board_count; i++)
   {
     printf("Generating spritesheets... %i%%\r", i*100/board_count);
@@ -136,7 +150,7 @@ void COBZ::gen_and_serialize_all_spritesheets(
     for (int j = 0; j < textures.len(); j++)
       if (textures[j].obz_board_id == boards[i].obz_id)
         objs.push(&textures[j]);
-    ssdims = gen_spritesheet_precursors(objs);
+    ssdims = gen_spritesheet_precursors(objs, fit_buf);
     gen_one_spritesheet(img, objs, ssdims, i);
 
     {
@@ -157,7 +171,7 @@ void COBZ::gen_and_serialize_all_spritesheets(
       // and reallocate it everytime
     }
   }
-  puts("Generated spritesheets. 100%");
+  puts("Generated spritesheets. 100%                ");
 }
 
 void COBZ::destroy()
@@ -168,11 +182,21 @@ void COBZ::destroy()
 
 void Board::serialize(Stream s)
 {
-  const int cell_count = cells.len();
+  const i64 cell_count = cells.len();
   s << w << h << parent_idx << cell_count;
+  ivec2 pos = {0,0};
   for (int i = 0; i < cell_count; i++)
   {
-    cells[i].serialize(s);
+    if (cells[i].obz_xy == pos)
+      cells[i].serialize(s);
+    else
+      Cell::init().serialize(s);
+    pos.x++;
+    if (pos.x >= w)
+    {
+      pos.x = 0;
+      pos.y++;
+    }
   }
 }
 
@@ -201,7 +225,7 @@ void Cell::serialize(Stream s)
   i64 len;
   s.write_anchor("CLL");
   s << (i32&) tex_id;
-  len = name.len();
+  len = name.len()+1;
   fwrite(&len, sizeof(len), 1, s._f);
   fwrite(name.data(), len, 1, s._f);
   len = actions.len();

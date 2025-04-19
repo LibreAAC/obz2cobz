@@ -18,7 +18,7 @@ u32 hexchar(char c)
   if (c >= 'a' && c <= 'f') return c - 'a' + 10;
   if (c >= 'A' && c <= 'F') return c - 'A' + 10;
   if (c >= '0' && c <= '9') return c - '0';
-  fprintf(stderr, "WARN: Invalid hexadecimal value: %c", c);
+  fprintf(stderr, "WARN: Invalid hexadecimal value: %c\n", c);
   return 0;
 }
 u32 rgba(u32 r, u32 g, u32 b, u32 a) { return (r << 24) | (g << 16) | (b << 8) | a; }
@@ -77,7 +77,7 @@ u32 parse_color(char* expr, u32 default_)
     {
       fprintf(
         stderr,
-        "WARN: Expected 6 or 8 digit hex color format, but got '%s'",
+        "WARN: Expected 6 or 8 digit hex color format, but got '%s'\n",
         expr
       );
       return default_;
@@ -88,7 +88,7 @@ u32 parse_color(char* expr, u32 default_)
     const i64 legacy_color = u32_legacy_color(expr);
     if (legacy_color != -1)
       return legacy_color;
-    fprintf(stderr, "WARN: Unknown color format: '%s'", expr);
+    fprintf(stderr, "WARN: Unknown color format: '%s'\n", expr);
     return default_;
   }
 }

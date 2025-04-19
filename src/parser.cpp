@@ -38,10 +38,21 @@ ivec2 find_position(const char* s, JSON node)
   {
     JSON sub = {node.handle->child};
     const int w = sub.len();
+    sub = sub.handle->child;
     for (int x = 0; x < w; x++)
     {
-      if (str_eq(sub.to_str(), s))
-        return {x, y};
+      if (sub.is(cJSON_Number))
+      {
+        const int stoi = atoi(s);
+        if (stoi == sub.to_int())
+          return {x, y};
+      }
+      else
+      {
+        assert(sub.is(cJSON_String));
+        if (str_eq(sub.to_str(), s))
+          return {x, y};
+      }
       sub = sub.handle->next;
     }
   }
@@ -97,7 +108,8 @@ Board parse_board(
     cJSON_ArrayForEach(b.handle, obf["buttons"].handle)
     {
       auto c = Cell::init();
-      c.obz_id = string::own(b["id"].drop().to_str());
+      JSON idcont = b["id"];
+      c.obz_id = idcont.force_cast_to_string();
       if (b.has("label"))
       {
         c.name = string::own(b["label"].drop().to_str());
@@ -227,17 +239,17 @@ void* _image_preloader_batch(
   Batch& b = *(Batch*)_batch;
   for (int i = 0; i < b.inout.len; i++)
   {
-    const int W = atoi(getenv("COLUMNS"));
-    const int INFO_W = 6 + 2; // info width + square brackets
-    printf("\033[%iB[", b.th_id);
-    int j = 1;
-    for (; j < i*(W-INFO_W)/b.inout.len; j++)
-      putchar('=');
-    putchar('>');
-    for (j++; j < W-INFO_W; j++)
-      putchar(' ');
-    printf("] %03i%% \r\033[%iA",(int)(i*100/b.inout.len), b.th_id);
-    fflush(stdout);
+    // const int W = atoi(getenv("COLUMNS"));
+    // const int INFO_W = 6 + 2; // info width + square brackets
+    // printf("\033[%iB[", b.th_id);
+    // int j = 1;
+    // for (; j < i*(W-INFO_W)/b.inout.len; j++)
+    //   putchar('=');
+    // putchar('>');
+    // for (j++; j < W-INFO_W; j++)
+    //   putchar(' ');
+    // printf("] %03i%% \r\033[%iA",(int)(i*100/b.inout.len), b.th_id);
+    // fflush(stdout);
     auto obj = Obj::init();
     obj.obz_tex_id = string::ref(b.jason.handle->string).realloc();
     obj.img = load_img(b.z, b.jason.to_str(), "<image preloading: no cell name>");
@@ -273,7 +285,7 @@ COBZ parse_file(const char *obz)
 
     if (manifest_index == -1)
     {
-      fprintf(stderr, "ERR: Missing 'manifest.json'.");
+      fprintf(stderr, "ERR: Missing 'manifest.json'.\n");
       goto ERROR;
     }
   }
@@ -356,7 +368,7 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       cobz.textures.prealloc(total);
       cobz.textures.set_len(total);
       current_th_batch.inout = {cobz.textures.data(),total,0};
-      current_th_batch.jason = manifest["paths"]["images"];
+      current_th_batch.jason = {manifest["paths"]["images"].handle->child};
       current_th_batch.th_id = 0;
       current_th_batch.z = z;
       _image_preloader_batch(&current_th_batch);
@@ -376,18 +388,21 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
 
   // Board optimization/actual compilation
   { // 1. Put root first
-    const char* root_obz_id = manifest["root"].to_str();
+    const char* root_path = manifest["root"].to_str();
     const int board_count = cobz.boards.len();
+    const char* iter_board_id;
+    JSON board_list = manifest["paths"]["boards"], path;
     int root_idx = 0;
     Board temp;
-    for (; root_idx < board_count; root_idx++)
+    cJSON_ObjectForEach(iter_board_id, path.handle, board_list.handle)
     {
-      if (str_eq(cobz.boards[root_idx].obz_id.data(), root_obz_id))
+      if (str_eq(path.to_str(), root_path))
         break;
+      root_idx++;
     }
     if (root_idx >= board_count)
     {
-      fprintf(stderr, "ERR: Failed to found root board (%s).\n", root_obz_id);
+      fprintf(stderr, "ERR: Failed to found root board (%s).\n", root_path);
       goto ERROR;
     }
     temp = cobz.boards[0];
@@ -434,7 +449,7 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
               break;
             }
           }
-        } // goofy aahh stair
+        } // goofy aahh stairxtension
       }
     }
   }
@@ -449,7 +464,8 @@ ERROR:
     zip_close(z);
   if (manifest.handle)
     cJSON_Delete(manifest.handle);
-  end_board_parsing();
+  if (_obf_load_buf.owned)
+    end_board_parsing();
   cobz.destroy();
   return cobz;
 }

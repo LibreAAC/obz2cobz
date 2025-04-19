@@ -8,6 +8,10 @@ inline bool operator < (ivec2 a, ivec2 b)
     return a.x < b.x;
   return a.y < b.y;
 }
+inline bool operator == (ivec2 a, ivec2 b)
+{
+  return a.x == b.x && a.y == b.y;
+}
 struct Cell;
 struct Board;
 struct Rect
@@ -30,7 +34,7 @@ struct Obj
     self.obz_tex_id.init();
     self.obz_board_id.init();
     self.img = ImageData::init();
-    self.rect = {0.f, 0.f, 0.f, 0.f};
+    self.rect = {0.f, 0.f, 0.f, 0.f, -1, false};
     return self;
   }
   void destroy();
@@ -65,7 +69,7 @@ struct COBZ
     }
     return nullptr;
   }
-  ivec2 gen_spritesheet_precursors(list<Obj*>& objs);
+  ivec2 gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf);
   void gen_one_spritesheet(
     ImageData& buffer,
     list<Obj*>& objs,

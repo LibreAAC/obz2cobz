@@ -7,8 +7,10 @@ const char* const SUPPORTED_IMAGE_EXT[SUPPORTED_IMAGE_EXT_COUNT] = {
 bool is_image_ext_supported(const char* extension)
 {
   for (int i = 0; i < SUPPORTED_IMAGE_EXT_COUNT; i++)
+  {
     if (str_eq(extension, SUPPORTED_IMAGE_EXT[i]))
       return true;
+  }
   return false;
 }
 

@@ -53,10 +53,19 @@ ImageData ImageData::from(ByteBuffer buffer)
 }
 void ImageData::destroy()
 {
-  stbi_image_free(_data);
+  // stbi_image_free(_data);
+  if (_data)
+  {
+    free(_data);
+    _data = nullptr;
+  }
+  else if (_w == 0 || _h == 0)
+    _data = nullptr;
 }
 void ImageData::downscale_pow2(int factor)
 {
+  if (_data == nullptr)
+    return;
   for (int y = 0; y < (_h>>factor)+(_h&1); y++)
   {
     for (int x = 0; x < (_w>>factor)+(_w&1); x++)
@@ -67,6 +76,10 @@ void ImageData::downscale_pow2(int factor)
 }
 void ImageData::paste(ImageData& img, int x, int y)
 {
+  if (_data == nullptr)
+    return;
+  if (img._data == nullptr)
+    return;
   const int end = y+img.height();
   const int paste_width = std::min(x + img.width(), width()) - x;
   for (; y < end; y++)
@@ -76,6 +89,8 @@ void ImageData::paste(ImageData& img, int x, int y)
 }
 void ImageData::serialize(Stream s)
 {
+  if (_data == nullptr)
+    return;
   s.write_anchor("IMG");
   const int len = stbi_write_png_to_func(
     [](void* f_, void* data, int size)
@@ -137,7 +152,7 @@ ImageData load_img(
   else
   {
     const int len = str_len(src);
-    const int MAX_EXTENSION_LEN = 4;
+    const int MAX_EXTENSION_LEN = 5;
     size_t temp_size;
     char extension_load[MAX_EXTENSION_LEN+1];
     char* extension = extension_load + MAX_EXTENSION_LEN;
@@ -153,6 +168,7 @@ ImageData load_img(
         );
         return INVALID_IMAGE;
       }
+      extension++;
       if (!is_image_ext_supported(extension))
         fprintf(
           stderr, "ERR: [%s] Extension not supported (%s).\n",

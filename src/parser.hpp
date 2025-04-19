@@ -21,6 +21,25 @@ struct JSON
     handle->type |= cJSON_IsReference;
     return *this;
   }
+  string force_cast_to_string()
+  {
+    string ret;
+    if (is(cJSON_String))
+      return string::own(drop().to_str());
+    else if (is(cJSON_Number))
+    {
+      ret.init();
+      ret.prealloc(16);
+      snprintf(ret.data(), 15, "%i", to_int());
+      ret.data()[15] = 0;
+      return ret;
+    }
+    else
+    {
+      todo();
+      return ret;
+    }
+  }
   char* to_str() const
   { assert(cJSON_IsString(handle)); return cJSON_GetStringValue(handle); }
   int to_int() const
@@ -78,7 +97,7 @@ for ( \
     key = value->string \
   ); \
   value != nullptr; \
-  (value = value->next, key = value->string) \
+  (value = value->next, key = value != nullptr ? value->string : nullptr) \
 )
 
 
