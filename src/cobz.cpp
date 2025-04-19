@@ -66,6 +66,7 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
         objs[i]->rect.h
       }, i
     });
+    printf("%f,%f,%f,%f\n", fits[-1].rect.x,fits[-1].rect.y,fits[-1].rect.w,fits[-1].rect.h);
   }
   
   ivec2 ssdims = {0,0}; // spritesheet dimensions
@@ -120,7 +121,6 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
 void COBZ::gen_one_spritesheet(
   ImageData& buffer,
   list<Obj*>& objs,
-  ivec2 dims,
   int spritesheet_id
 ) {
   for (int i = 0; i < objs.len(); i++)
@@ -151,7 +151,8 @@ void COBZ::gen_and_serialize_all_spritesheets(
       if (textures[j].obz_board_id == boards[i].obz_id)
         objs.push(&textures[j]);
     ssdims = gen_spritesheet_precursors(objs, fit_buf);
-    gen_one_spritesheet(img, objs, ssdims, i);
+    img = ImageData::create(ssdims.x, ssdims.y);
+    gen_one_spritesheet(img, objs, i);
 
     {
       fseek(s._f, seek_rects, SEEK_SET);

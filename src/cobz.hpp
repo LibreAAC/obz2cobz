@@ -73,7 +73,6 @@ struct COBZ
   void gen_one_spritesheet(
     ImageData& buffer,
     list<Obj*>& objs,
-    ivec2 dims,
     int spritesheet_id
   );
   void gen_and_serialize_all_spritesheets(Stream s, long seek_rects, long seek_texs);

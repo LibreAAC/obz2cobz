@@ -187,7 +187,7 @@ Board parse_board(
       }
       else if (c.name.data() != nullptr)
       {
-        c.actions.push(string::ref(c.name.data()));
+        c.actions.push(string::ref(c.name.data()).prextend({(char*)"+",1,1}));
       }
       if (b.has("background_color"))
         c.background = parse_color(b["background_color"].to_str(), 0);

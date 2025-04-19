@@ -51,6 +51,14 @@ ImageData ImageData::from(ByteBuffer buffer)
   );
   return r;
 }
+ImageData ImageData::create(int w, int h)
+{
+  ImageData self;
+  self._data = (rgba32*)calloc(w*h, sizeof(rgba32));
+  self._w = w;
+  self._h = h;
+  return self;
+}
 void ImageData::destroy()
 {
   // stbi_image_free(_data);
@@ -80,11 +88,10 @@ void ImageData::paste(ImageData& img, int x, int y)
     return;
   if (img._data == nullptr)
     return;
-  const int end = y+img.height();
   const int paste_width = std::min(x + img.width(), width()) - x;
-  for (; y < end; y++)
+  for (int iy = 0; iy < img.height(); iy++)
   {
-    memcpy(_data+y*height(), img._data+y*img.height(), sizeof(rgba32)*paste_width);
+    memcpy(_data+(y+iy)*width(), img._data+iy*img.width(), sizeof(rgba32)*paste_width);
   }
 }
 void ImageData::serialize(Stream s)

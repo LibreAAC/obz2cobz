@@ -19,6 +19,7 @@ struct ImageData
   { return { nullptr, 0, 0 }; }
   static ImageData from(const char* filename);
   static ImageData from(ByteBuffer buffer);
+  static ImageData create(int w, int h);
   inline bool is_valid() { return _data != nullptr && _w != 0 && _h != 0; }
   inline int width() { return _w; }
   inline int height() { return _h; }
