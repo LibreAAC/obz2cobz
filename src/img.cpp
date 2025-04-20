@@ -101,14 +101,13 @@ void ImageData::serialize(Stream s)
   if (_data == nullptr)
     return;
   s.write_anchor("IMG");
-  const int len = stbi_write_png_to_func(
+  stbi_write_png_to_func(
     [](void* f_, void* data, int size)
     {
       auto f = (FILE*)f_;
       fwrite(data, size, 1, f);
     }, s._f, _w, _h, 4, _data, _w*sizeof(rgba32)
   );
-  printf("INFO: Written image is %i bytes long.", len);
 }
 
 ImageData load_img(
@@ -192,5 +191,7 @@ ImageData load_img(
     }
     zip_entry_close(z);
   }
-  return ImageData::from(raw);
+  auto ret = ImageData::from(raw);
+  raw.destroy();
+  return ret;
 }

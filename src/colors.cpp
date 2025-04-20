@@ -6,12 +6,13 @@ float depercent(char* expr, float max)
   if (expr[len-1] == '%')
   {
     expr[len-1] = 0;
-    const float r = strtof(expr, nullptr)/100.f * max;
+    // const float r = strtof(expr, nullptr)/100.f * max;
+    const float r = atof(expr)/100.f*max;
     expr[len-1] = '%';
     return r;
   }
   else
-    return strtof(expr, nullptr);
+    return atof(expr);
 }
 u32 hexchar(char c)
 {
@@ -31,15 +32,15 @@ u32 parse_color(char* expr, u32 default_)
 #define READ_COLOR_COMP(COMP, NEXT_END) \
     FIND_NEXT_CHAR(comma, NEXT_END); \
     expr[comma] = 0; \
-    COMP = depercent(expr+comma, 255); \
-    comma++;
+    COMP = depercent(expr+prev, 255); \
+    comma++; prev = comma;
 
   const int len = str_len(expr);
   if (len == 0)
     return default_;
   if (str_startswith(expr, "rgb(") && str_endswith(expr, ")"))
   {
-    int comma = 4;
+    int comma = 4, prev = 4;
     u32 r,g,b;
     READ_COLOR_COMP(r, ',');
     READ_COLOR_COMP(g, ',');
@@ -49,7 +50,7 @@ u32 parse_color(char* expr, u32 default_)
   else if (
     str_startswith(expr, "rgba(") && str_endswith(expr, ")")
   ) {
-    int comma = 5;
+    int comma = 5, prev = 5;
     u32 r,g,b,a;
     READ_COLOR_COMP(r, ',');
     READ_COLOR_COMP(g, ',');

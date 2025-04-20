@@ -146,6 +146,7 @@ void COBZ::gen_and_serialize_all_spritesheets(
   for (int i = 0; i < board_count; i++)
   {
     printf("Generating spritesheets... %i%%\r", i*100/board_count);
+    fflush(stdout);
     objs.clear();
     for (int j = 0; j < textures.len(); j++)
       if (textures[j].obz_board_id == boards[i].obz_id)
@@ -173,6 +174,8 @@ void COBZ::gen_and_serialize_all_spritesheets(
     }
   }
   puts("Generated spritesheets. 100%                ");
+  fit_buf.destroy();
+  objs.destroy();
 }
 
 void COBZ::destroy()
@@ -192,6 +195,16 @@ void Board::serialize(Stream s)
       cells[i].serialize(s);
     else
       Cell::init().serialize(s);
+    pos.x++;
+    if (pos.x >= w)
+    {
+      pos.x = 0;
+      pos.y++;
+    }
+  }
+  while (pos.y < h)
+  {
+    Cell::init().serialize(s);
     pos.x++;
     if (pos.x >= w)
     {
@@ -226,7 +239,7 @@ void Cell::serialize(Stream s)
   i64 len;
   s.write_anchor("CLL");
   s << (i32&) tex_id;
-  len = name.len()+1;
+  len = name.len();
   fwrite(&len, sizeof(len), 1, s._f);
   if (name.data())
     fwrite(name.data(), len, 1, s._f);

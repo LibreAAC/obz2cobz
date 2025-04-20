@@ -70,7 +70,7 @@ Board parse_board(
   JSON manifest
 ) {
   auto board = Board::init();
-  zip_entry_open(z, obf_path);
+  zip_entry_opencasesensitive(z, obf_path);
   {
     const u64 size = zip_entry_size(z);
     obf_load.prealloc_at_least(size);
@@ -210,11 +210,14 @@ Board parse_board(
       if (c.obz_xy.x >= 0)
         insert_ordered(board.cells, c);
       else
+      {
         fprintf(
           stderr,
   "WARN: Had to discard cell '%s' because it doesn't have a grid position.\n",
           c.name.data()
         );
+        c.destroy();
+      }
     }
   }
   // NOTE: missing cells are only added when serializing
@@ -242,9 +245,31 @@ constexpr int zip_t_sizeof = sizeof(zip_t_memequiv);
 struct Batch
 {
   char z[zip_t_sizeof];
-  JSON jason;
+  JSON jason; // not owned
   View<Obj> inout;
   int th_id;
+  void destroy()
+  {
+    // uint8_t* pState = *(uint8_t**)(((zip_t_memequiv*)z)->_0._1+112-8-8);
+    // if (pState)
+    // {
+    //   if (*(void**)(pState+0))
+    //     free(*(void**)(pState+0));
+    //   if (*(void**)(pState+32))
+    //     free(*(void**)(pState+32));
+    //   if (*(void**)(pState+64))
+    //     free(*(void**)(pState+64));
+    //   *(void**)(pState+0) = 0;   
+    //   *(void**)(pState+32) = 0;
+    //   *(void**)(pState+64) = 0;
+    //   free(pState);
+    //   *(uint8_t**)(z+zip_t_sizeof-8) = 0;
+    // }
+    // uint8_t** opaqueMem = (uint8_t**)(((zip_t_memequiv*)z)->_0._1+112-8-6*8);
+    // if (*opaqueMem)
+    //   free(*opaqueMem);
+    // *opaqueMem = 0;
+  }
 };
 struct Thread
 { // this is ridiculous
@@ -389,6 +414,7 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       {
         threads[i].thread.join();
       }
+      current_th_batch.destroy();
       threads.destroy();
     }
     else
@@ -401,6 +427,7 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       current_th_batch.th_id = 0;
       memcpy(current_th_batch.z, z, zip_t_sizeof);
       _image_preloader_batch(&current_th_batch);
+      current_th_batch.destroy();
     }
   }
 
