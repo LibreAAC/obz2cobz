@@ -67,7 +67,7 @@ struct Cell
     return self;
   }
   void set_child_obz(COBZ& cobz, string& obz_id);
-  void set_child_idx(COBZ& cobz, int idx);
+  void set_child_idx(COBZ& cobz, int board_idx, int child_idx);
   void serialize(Stream s);
   inline void destroy()
   {
@@ -128,7 +128,7 @@ struct COBZ
     list<Obj*>& objs,
     int spritesheet_id
   );
-  void gen_and_serialize_all_spritesheets(Stream s, long seek_rects, long seek_texs);
+  i64 gen_and_serialize_all_spritesheets(Stream s, long seek_rects, long seek_texs);
   void destroy();
 };
 

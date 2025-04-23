@@ -73,9 +73,10 @@ Board parse_board(
   zip_entry_opencasesensitive(z, obf_path);
   {
     const u64 size = zip_entry_size(z);
-    obf_load.prealloc_at_least(size);
+    obf_load.prealloc_at_least(size+1);
     zip_entry_noallocread(z, obf_load.data<void>(), size);
     obf_load.set_len(size);
+    obf_load.data<char>()[size] = 0;
   }
   zip_entry_close(z);
   JSON obf = cJSON_Parse(obf_load.data<char>());
@@ -481,31 +482,18 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
           cell.tex_id = p - cobz.textures.data();
         else
           cell.tex_id = -1;
-        if (cell.obz_child_id.is_empty() && !cell.obz_child_id.is_owned())
+        for (int k = 0; k < board_count; k++)
         {
-          bool cell_child_has_been_set = false;
-          for (int k = 0; k < board_count; k++)
-          {
-            if (cobz.boards[k].name == cell.name)
-            {
-              cell.set_child_idx(cobz, k);
-              cell_child_has_been_set = true;
-              break;
-            }
+          if (
+            (cell.obz_child_id.is_empty() &&
+             !cell.obz_child_id.is_owned() &&
+             (cobz.boards[k].name == cell.name)
+            ) || (cobz.boards[k].obz_id == cell.obz_child_id)
+          ) {
+            cell.set_child_idx(cobz, i, k);
+            break;
           }
-          assert(cell.child == -1 || cell_child_has_been_set);
-        }
-        else
-        {
-          for (int k = 0; k < board_count; k++)
-          {
-            if (cobz.boards[k].obz_id == cell.obz_child_id)
-            {
-              cell.set_child_idx(cobz, k);
-              break;
-            }
-          }
-        } // goofy aahh stairxtension
+        } // goofy aahh stairs
       }
     }
   }

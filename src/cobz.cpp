@@ -17,6 +17,8 @@ void Obj::destroy()
 
 ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
 {
+  if (objs.len() == 0)
+    return {0,0};
   // TODO: ROTATE THE ALGORITHM BECAUSE PASTING LONG LINES IS FASTER
   // THAN LONG COLUMNS (given currently implemented algorithms)
   int minw = 0;
@@ -131,7 +133,7 @@ void COBZ::gen_one_spritesheet(
   }
 }
 
-void COBZ::gen_and_serialize_all_spritesheets(
+i64 COBZ::gen_and_serialize_all_spritesheets(
   Stream s,
   long seek_rects,
   long seek_texs
@@ -140,6 +142,7 @@ void COBZ::gen_and_serialize_all_spritesheets(
   list<Obj*> objs;
   list<Fit> fit_buf;
   ivec2 ssdims;
+  i64 tex_count = 0;
   auto img = ImageData::init();
   objs.init();
   fit_buf.init();
@@ -151,9 +154,14 @@ void COBZ::gen_and_serialize_all_spritesheets(
     for (int j = 0; j < textures.len(); j++)
       if (textures[j].obz_board_id == boards[i].obz_id)
         objs.push(&textures[j]);
+    if (objs.len() == 0)
+      continue;
     ssdims = gen_spritesheet_precursors(objs, fit_buf);
+    if (ssdims.x == 0 || ssdims.y == 0)
+      continue;
     img = ImageData::create(ssdims.x, ssdims.y);
-    gen_one_spritesheet(img, objs, i);
+    gen_one_spritesheet(img, objs, tex_count);
+    tex_count++;
 
     {
       fseek(s._f, seek_rects, SEEK_SET);
@@ -176,6 +184,7 @@ void COBZ::gen_and_serialize_all_spritesheets(
   puts("Generated spritesheets. 100%                ");
   fit_buf.destroy();
   objs.destroy();
+  return tex_count;
 }
 
 void COBZ::destroy()
@@ -223,16 +232,26 @@ void Board::destroy()
 
 void Cell::set_child_obz(COBZ& cobz, string& obz_id)
 { obz_child_id.hold(obz_id); }
-void Cell::set_child_idx(COBZ& cobz, int idx)
+void Cell::set_child_idx(COBZ& cobz, int board_idx, int child_idx)
 {
   assert(obz_child_id.len() != 0);
-  child = idx;
-  if (cobz.boards[idx].parent_idx == -1)
+  child = child_idx;
+  if (cobz.boards[child_idx].parent_idx == -1)
   {
-    cobz.boards[idx].parent_idx = idx;
+    cobz.boards[child_idx].parent_idx = board_idx;
   }
   else
-    assert(cobz.boards[idx].parent_idx == idx);
+  {
+    // assert(cobz.boards[child_idx].parent_idx == board_idx);
+    if (cobz.boards[child_idx].parent_idx != board_idx)
+      fprintf(stderr,
+        "WARN: Board '%s' already has '%s' as a parent. "
+        "Parent '%s' will be ignored.\n",
+        cobz.boards[child_idx].name.data(),
+        cobz.boards[cobz.boards[child_idx].parent_idx].name.data(),
+        cobz.boards[board_idx].name.data()
+      );
+  }
 }
 void Cell::serialize(Stream s)
 {

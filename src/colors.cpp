@@ -22,7 +22,8 @@ u32 hexchar(char c)
   fprintf(stderr, "WARN: Invalid hexadecimal value: %c\n", c);
   return 0;
 }
-u32 rgba(u32 r, u32 g, u32 b, u32 a) { return (r << 24) | (g << 16) | (b << 8) | a; }
+#define REVERSE32(X) ((X&0xff)<<24)|(((X>>8)&0xff)<<16)|(((X>>16)&0xff)<<8)|((X>>24)&0xff)
+u32 rgba(u32 r, u32 g, u32 b, u32 a) { return r | (g << 8) | (b << 16) | (a << 24); }
 u32 parse_color(char* expr, u32 default_)
 {
 #define FIND_NEXT_CHAR(IDX, CHAR) \
@@ -65,14 +66,14 @@ u32 parse_color(char* expr, u32 default_)
       u32 ret = 0;
       for (int i = 0; i < 6; i++)
       { ret |= hexchar(expr[i+1]) << (i*4 + 8); }
-      return ret;
+      return REVERSE32(ret);
     }
     else if (len == 9)
     {
       u32 ret = 0;
       for (int i = 0; i < 8; i++)
       { ret |= hexchar(expr[i+1]) << (i*4); }
-      return ret;
+      return REVERSE32(ret);
     }
     else
     {

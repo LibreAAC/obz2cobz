@@ -35,11 +35,15 @@ int main(int argc, const char** argv)
     cobz.boards[i].serialize(f);
   }
   f << (len = cobz.textures.len());
-  const long seek_rects = ftell(f._f);
-  const long seek_texs = seek_rects+len*Rect::SERIALIZED_LENGTH;
+  const long seek_rects = 8+ftell(f._f);
+  const long seek_texs = 8+seek_rects+len*Rect::SERIALIZED_LENGTH;
   // NOTE: count of spritesheets is already given by board count
-  cobz.gen_and_serialize_all_spritesheets(f, seek_rects, seek_texs);
+  const i64 tex_count =
+    cobz.gen_and_serialize_all_spritesheets(f, seek_rects, seek_texs);
   cobz.destroy();
+  fseek(f._f, seek_rects-8, SEEK_SET);
+  static_assert(sizeof(i64) == 8);
+  f << (i64&) tex_count;
   fclose(f._f);
   puts("Done.");
   return 0;
