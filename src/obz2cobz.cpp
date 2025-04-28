@@ -35,7 +35,15 @@ int main(int argc, const char** argv)
   const long seek_texs = 8+seek_rects+len*Rect::SERIALIZED_LENGTH;
   // NOTE: count of spritesheets is already given by board count
   const i64 tex_count =
-    cobz.gen_and_serialize_all_spritesheets(f, seek_rects, seek_texs);
+    cobz.gen_and_serialize_all_spritesheets(f, seek_texs);
+  {
+    fseek(f._f, seek_rects, SEEK_SET);
+    const int rect_count = cobz.textures.len();
+    for (int i = 0; i < rect_count; i++)
+    {
+      cobz.textures[i].rect.serialize(f);
+    }
+  }
   cobz.destroy();
   fseek(f._f, seek_rects-8, SEEK_SET);
   static_assert(sizeof(i64) == 8);

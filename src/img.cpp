@@ -115,6 +115,18 @@ void ImageData::serialize(Stream s)
     }, s._f, _w, _h, 4, _data, _w*sizeof(rgba32)
   );
 }
+void ImageData::save(Stream s)
+{
+  if (_data == nullptr)
+    return;
+  stbi_write_png_to_func(
+    [](void* f_, void* data, int size)
+    {
+      auto f = (FILE*)f_;
+      fwrite(data, size, 1, f);
+    }, s._f, _w, _h, 4, _data, _w*sizeof(rgba32)
+  );
+}
 
 ImageData load_img(
   zip_t* z,

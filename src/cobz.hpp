@@ -128,7 +128,7 @@ struct COBZ
     list<Obj*>& objs,
     int spritesheet_id
   );
-  i64 gen_and_serialize_all_spritesheets(Stream s, long seek_rects, long seek_texs);
+  i64 gen_and_serialize_all_spritesheets(Stream s, long seek_texs);
   void destroy();
 };
 

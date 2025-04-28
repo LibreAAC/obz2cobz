@@ -38,13 +38,14 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
       maxw = objs[i]->rect.w;
     objs[i]->img.downscale_pow2(downscale_factor);
   }
-  maxw *= 2;
   // yeah... im lazy...
   // but who wants to write a sorting algorithm in big 2025 anyway ???
   std::sort(objs.data(), objs.data()+(objs.len()), [](Obj* a, Obj* b){
+    // NOTE: C++ for increasing order wants a '<'
+    // here we want reverse, so '>' it is !
     if (a->rect.w == b->rect.w)
-      return a->rect.h < b->rect.h;
-    return a->rect.w < b->rect.w;
+      return a->rect.h > b->rect.h;
+    return a->rect.w > b->rect.w;
   });
   minw = objs[-1]->rect.w;
   // Set y positions accordingly
@@ -135,9 +136,9 @@ void COBZ::gen_one_spritesheet(
 
 i64 COBZ::gen_and_serialize_all_spritesheets(
   Stream s,
-  long seek_rects,
   long seek_texs
 ) {
+  // char buf[1024];
   const int board_count = boards.len();
   list<Obj*> objs;
   list<Fit> fit_buf;
@@ -161,16 +162,12 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
       continue;
     img = ImageData::create(ssdims.x, ssdims.y);
     gen_one_spritesheet(img, objs, tex_count);
+    // memset(buf, 0, 1024);
+    // snprintf(buf, 1024, "%li.png", tex_count);
+    // FILE* temp = fopen(buf, "wb");
+    // img.save({temp});
+    // fclose(temp);
     tex_count++;
-
-    {
-      fseek(s._f, seek_rects, SEEK_SET);
-      for (int j = 0; j < objs.len(); j++)
-      {
-        objs[j]->rect.serialize(s);
-      }
-      seek_rects = ftell(s._f);
-    }
 
     {
       fseek(s._f, seek_texs, SEEK_SET);

@@ -28,6 +28,7 @@ struct ImageData
   // etc...
   void downscale_pow2(int pow2_factor);
   void paste(ImageData& img, int x, int y);
+  void save(Stream s);
   void serialize(Stream s);
   void destroy();
 };
