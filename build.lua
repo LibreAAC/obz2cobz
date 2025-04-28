@@ -10,7 +10,7 @@ LD_LIBRARY_PATH = ""
 load_os()
 parse_args()
 ensure_folder("temp")
-CFLAGS = CFLAGS .. " " .. LD_LIBRARY_PATH
+CFLAGS = CFLAGS .. " -Wl,-rpath," .. LD_LIBRARY_PATH
 local objs = ""
 local clangd_shit = "["
 for i,p in pairs(SRC) do
