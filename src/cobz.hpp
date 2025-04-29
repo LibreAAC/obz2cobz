@@ -12,6 +12,8 @@ inline bool operator == (ivec2 a, ivec2 b)
 {
   return a.x == b.x && a.y == b.y;
 }
+inline bool operator != (ivec2 a, ivec2 b)
+{ return !(a == b); }
 struct Rect
 {
   static constexpr int SERIALIZED_LENGTH = sizeof(float)*4 + sizeof(int);

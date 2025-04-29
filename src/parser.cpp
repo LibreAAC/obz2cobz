@@ -6,7 +6,6 @@
 #include "colors.hpp"
 #include <cstdio>
 #include <cstdlib>
-#include <functional>
 #include <pthread.h>
 #include <thread>
 
@@ -208,16 +207,15 @@ Board parse_board(
       if (b.has("border_color"))
         c.border = parse_color(b["border_color"].to_str(), 0);
       c.obz_xy = find_position(c.obz_id.data(), obf["grid"]["order"]);
-      if (c.obz_xy.x >= 0)
-        insert_ordered(board.cells, c);
-      else
+      insert_ordered(board.cells, c);
+      if (c.obz_xy.x < 0)
       {
         fprintf(
           stderr,
-  "WARN: Had to discard cell '%s' because it doesn't have a grid position.\n",
+          "WARN: Cell '%s' will be misplaced because it doesn't have a "
+          "grid position.\n",
           c.name.data()
         );
-        c.destroy();
       }
     }
   }
@@ -249,28 +247,6 @@ struct Batch
   JSON jason; // not owned
   View<Obj> inout;
   int th_id;
-  void destroy()
-  {
-    // uint8_t* pState = *(uint8_t**)(((zip_t_memequiv*)z)->_0._1+112-8-8);
-    // if (pState)
-    // {
-    //   if (*(void**)(pState+0))
-    //     free(*(void**)(pState+0));
-    //   if (*(void**)(pState+32))
-    //     free(*(void**)(pState+32));
-    //   if (*(void**)(pState+64))
-    //     free(*(void**)(pState+64));
-    //   *(void**)(pState+0) = 0;   
-    //   *(void**)(pState+32) = 0;
-    //   *(void**)(pState+64) = 0;
-    //   free(pState);
-    //   *(uint8_t**)(z+zip_t_sizeof-8) = 0;
-    // }
-    // uint8_t** opaqueMem = (uint8_t**)(((zip_t_memequiv*)z)->_0._1+112-8-6*8);
-    // if (*opaqueMem)
-    //   free(*opaqueMem);
-    // *opaqueMem = 0;
-  }
 };
 struct Thread
 { // this is ridiculous
@@ -306,7 +282,7 @@ void* _image_preloader_batch(
     // fflush(stdout);
     auto obj = Obj::init();
     obj.obz_tex_id = string::ref(b.jason.handle->string).realloc();
-    obj.img = load_img((zip_t*)&b.z, b.jason.to_str(), "<image preloading: no cell name>");
+    obj.img = load_img((zip_t*)&b.z, b.jason.to_str(), obj.obz_tex_id.data());
     b.inout[i] = obj;
     b.jason.handle = b.jason.handle->next;
   }
@@ -415,7 +391,6 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       {
         threads[i].thread.join();
       }
-      current_th_batch.destroy();
       threads.destroy();
     }
     else
@@ -428,7 +403,6 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       current_th_batch.th_id = 0;
       memcpy(current_th_batch.z, z, zip_t_sizeof);
       _image_preloader_batch(&current_th_batch);
-      current_th_batch.destroy();
     }
   }
 

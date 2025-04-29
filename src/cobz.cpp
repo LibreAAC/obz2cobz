@@ -138,7 +138,7 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
   Stream s,
   long seek_texs
 ) {
-  // char buf[1024];
+  char buf[1024];
   const int board_count = boards.len();
   list<Obj*> objs;
   list<Fit> fit_buf;
@@ -162,11 +162,11 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
       continue;
     img = ImageData::create(ssdims.x, ssdims.y);
     gen_one_spritesheet(img, objs, tex_count);
-    // memset(buf, 0, 1024);
-    // snprintf(buf, 1024, "%li.png", tex_count);
-    // FILE* temp = fopen(buf, "wb");
-    // img.save({temp});
-    // fclose(temp);
+    memset(buf, 0, 1024);
+    snprintf(buf, 1024, "%li.png", tex_count);
+    FILE* temp = fopen(buf, "wb");
+    img.save({temp});
+    fclose(temp);
     tex_count++;
 
     {
@@ -195,12 +195,50 @@ void Board::serialize(Stream s)
   const i64 cell_count = cells.len();
   s << w << h << parent_idx;
   ivec2 pos = {0,0};
+  // first give a position to cells without one
+  int valid_start = 0;
+  for (;
+         valid_start < cell_count
+      && cells[valid_start].obz_xy.x < 0;
+      valid_start++
+  ) {}
+  if (valid_start > 0)
+  {
+    int insert_pos = valid_start;
+    for (int i = 0; i < valid_start; i++)
+    {
+      while (pos == cells[insert_pos].obz_xy)
+      {
+        assert(pos.y < h);
+        insert_pos++;
+        pos.x++;
+        if (pos.x >= w)
+        {
+          pos.x = 0;
+          pos.y++;
+        }
+      }
+      assert(pos.y < h);
+      cells[0].obz_xy = pos;
+      const Cell temp = cells[0];
+      for (int j = 0; j < insert_pos-1; j++)
+        cells[j] = cells[j+1];
+      cells[insert_pos-1] = temp;
+      insert_pos--;
+    }
+    pos = {0,0};
+  }
+  
+  // then serialize all the cells once in order
   for (int i = 0; i < cell_count; i++)
   {
     if (cells[i].obz_xy == pos)
       cells[i].serialize(s);
     else
+    {
       Cell::init().serialize(s);
+      i--;
+    }
     pos.x++;
     if (pos.x >= w)
     {

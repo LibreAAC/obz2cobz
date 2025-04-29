@@ -16,7 +16,7 @@ void svg2png(ByteBuffer in, ByteBuffer& out, const char* const info)
     (i8*)in.data, in.len, 128, 128, nullptr, nullptr
   );
   if (doc == nullptr)
-  { printf("ERROR: [%s] Failed to read svg document.", info); return; }
+  { printf("ERROR: [%s] Failed to read svg document.\n", info); return; }
   const plutovg_surface_t* surf = plutosvg_document_render_to_surface(
     doc, nullptr, 128, 128, nullptr, nullptr, nullptr
   );
@@ -196,10 +196,13 @@ ImageData load_img(
       }
       extension++;
       if (!is_image_ext_supported(extension))
+      {
         fprintf(
           stderr, "ERR: [%s] Extension not supported (%s).\n",
           cell_name, extension
         );
+        return INVALID_IMAGE;
+      }
     }
     zip_entry_open(z, src);
     {
@@ -208,6 +211,13 @@ ImageData load_img(
       raw.len = temp_size;
     }
     zip_entry_close(z);
+    if (str_eq(extension, "svg"))
+    {
+      ByteBuffer out;
+      svg2png(raw, out, cell_name);
+      raw.destroy();
+      raw = out;
+    }
   }
   auto ret = ImageData::from(raw);
   raw.destroy();
