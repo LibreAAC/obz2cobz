@@ -4,6 +4,7 @@
 --  cJSON by DaveGamble on github under MIT license
 --  plutosvg by sammycage under MIT license
 --  stb_image by nothings under public domain
+--  stb_image_write by nothings under public domain
 require("src/shared/shared")
 load_os()
 CJSON_VERSION = "1.7.18"
