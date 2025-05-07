@@ -64,7 +64,7 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
   {
     fits.push(Fit{
       {
-        objs[i]->rect.w,
+        objs[i]->rect.x+objs[i]->rect.w,
         objs[i]->rect.y,
         maxw - objs[i]->rect.w,
         objs[i]->rect.h
@@ -109,6 +109,10 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
         break;
       }
     }
+    if (maxw - (objs[i]->rect.x + objs[i]->rect.w) <= minw)
+    {
+      base_fixed = i+1;
+    }
   }
   ssdims.x = maxw;
   for (int i = 0; i < objs.len(); i++)
@@ -138,7 +142,7 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
   Stream s,
   long seek_texs
 ) {
-  char buf[1024];
+  // char buf[1024];
   const int board_count = boards.len();
   list<Obj*> objs;
   list<Fit> fit_buf;
@@ -162,11 +166,11 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
       continue;
     img = ImageData::create(ssdims.x, ssdims.y);
     gen_one_spritesheet(img, objs, tex_count);
-    memset(buf, 0, 1024);
-    snprintf(buf, 1024, "%li.png", tex_count);
-    FILE* temp = fopen(buf, "wb");
-    img.save({temp});
-    fclose(temp);
+    // memset(buf, 0, 1024);
+    // snprintf(buf, 1024, "%li.png", tex_count);
+    // FILE* temp = fopen(buf, "wb");
+    // img.save({temp});
+    // fclose(temp);
     tex_count++;
 
     {

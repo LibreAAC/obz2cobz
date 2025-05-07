@@ -12,8 +12,6 @@ const char* help =
 "into a Compiled Open Board Zip for this custom AAC program I wrote (AACpp).\n"
 "\n";
 
-
-
 int main(int argc, const char** argv)
 {
   if (argc < 3)
@@ -42,6 +40,25 @@ int main(int argc, const char** argv)
     for (int i = 0; i < rect_count; i++)
     {
       cobz.textures[i].rect.serialize(f);
+    }
+  }
+  for (int i = 0; i < cobz.boards.len(); i++)
+  {
+    printf("=== Board [%s] ===\n", cobz.boards[i].name.data());
+    for (int j = 0; j < cobz.boards[i].cells.len(); j++)
+    {
+      const Cell& c = cobz.boards[i].cells[j];
+      printf(
+        " [%s] at (%i,%i), tex_id=%i, rect=(%f,%f,%f,%f), ssid=%i\n",
+        c.name.data(),
+        c.obz_xy.x, c.obz_xy.y,
+        c.tex_id,
+        cobz.textures[c.tex_id].rect.x,
+        cobz.textures[c.tex_id].rect.y,
+        cobz.textures[c.tex_id].rect.w,
+        cobz.textures[c.tex_id].rect.h,
+        cobz.textures[c.tex_id].rect.spritesheet_id
+      );
     }
   }
   cobz.destroy();

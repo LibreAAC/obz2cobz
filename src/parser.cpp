@@ -3,6 +3,8 @@
 #include "img.hpp"
 #include "utils.hpp"
 #include "zip.h"
+#define MINIZ_HEADER_FILE_ONLY
+#include "miniz.h"
 #include "colors.hpp"
 #include <cstdio>
 #include <cstdlib>
@@ -119,7 +121,8 @@ Board parse_board(
       }
       if (b.has("image_id"))
       {
-        Obj* tex = cobz.has_texture_with_id(b["image_id"].to_str());
+        const int texi = cobz.has_texture_with_id(b["image_id"].to_str());
+        Obj* tex = &cobz.textures[texi];
         if (tex)
         {
           // both live for the same amount of time
@@ -227,19 +230,38 @@ Board parse_board(
 }
 
 
+#define MZ_ZIP_LOCAL_DIR_HEADER_SIZE 30
+
 // Do not hide your structures please. For the love of whoever you want.
 // Do not hide your structures.
 // Do. not. hide. your. structures.
-// struct shit2_t { void* _0; char _1[167800-8]; };
-struct shit3_t { void* _0; char _1[167936-8]; };
-struct shit_t { void* _0; char _1[112-8]; };
-struct zip_t_memequiv {
-  shit_t _0;
-  unsigned int _1;
-  shit3_t _2; 
+typedef struct {
+  mz_zip_archive *m_pZip;
+  mz_uint64 m_cur_archive_file_ofs;
+  mz_uint64 m_comp_size;
+} mz_zip_writer_add_state;
+struct zip_entry_t {
+  ssize_t index;
+  char *name;
+  mz_uint64 uncomp_size;
+  mz_uint64 comp_size;
+  mz_uint32 uncomp_crc32;
+  mz_uint64 dir_offset;
+  mz_uint8 header[MZ_ZIP_LOCAL_DIR_HEADER_SIZE];
+  mz_uint64 header_offset;
+  mz_uint16 method;
+  mz_zip_writer_add_state state;
+  tdefl_compressor comp;
+  mz_uint32 external_attr;
+  time_t m_time;
+};
+struct zip_t {
+  mz_zip_archive archive;
+  mz_uint level;
+  struct zip_entry_t entry;
 };
 
-constexpr int zip_t_sizeof = sizeof(zip_t_memequiv);
+constexpr int zip_t_sizeof = sizeof(zip_t);
 
 struct Batch
 {
@@ -282,7 +304,7 @@ void* _image_preloader_batch(
     // fflush(stdout);
     auto obj = Obj::init();
     obj.obz_tex_id = string::ref(b.jason.handle->string).realloc();
-    obj.img = load_img((zip_t*)&b.z, b.jason.to_str(), obj.obz_tex_id.data());
+    obj.img = load_img((zip_t*)(char*)b.z, b.jason.to_str(), obj.obz_tex_id.data());
     b.inout[i] = obj;
     b.jason.handle = b.jason.handle->next;
   }
@@ -451,11 +473,16 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       for (int j = 0; j < cell_count; j++)
       {
         Cell& cell = board.cells[j];
-        const Obj* p = cobz.has_texture_with_id(cell.obz_tex_id.data());
-        if (p)
-          cell.tex_id = p - cobz.textures.data();
+        const int p = cobz.has_texture_with_id(cell.obz_tex_id.data());
+        if (p != -1)
+        {
+          cell.tex_id = p;
+        }
         else
+        {
+          printf("WARN: texture with id [%s] not found !\n", cell.obz_tex_id.data());
           cell.tex_id = -1;
+        }
         for (int k = 0; k < board_count; k++)
         {
           if (

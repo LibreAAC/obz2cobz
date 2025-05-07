@@ -1,10 +1,10 @@
 require("src/shared/shared")
 SRC = {"cobz.cpp", "colors.cpp", "img.cpp", "tables.cpp", "shared/utils.cpp",
   "shared/list.cpp", "cjson.cpp", "obz2cobz.cpp", "parser.cpp", "stbi.cpp",
-  "stbiw.cpp"
+  "stbiw.cpp", "zip.cpp"
 }
-CFLAGS = "-fsanitize=address -I include -I src/shared"
-LFLAGS = "-lpthread -L lib -lzip -lplutosvg -lplutovg -lcurl"
+CFLAGS = "-I include -I src/shared"
+LFLAGS = "-lpthread -L lib -lplutosvg -lplutovg -lcurl"
 LD_LIBRARY_PATH = ""
 
 load_os()

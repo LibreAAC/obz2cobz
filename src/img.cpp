@@ -95,11 +95,11 @@ void ImageData::paste(ImageData& img, int x, int y)
   const int paste_width = std::min(x + img.width(), width()) - x;
   for (int iy = 0; iy < img.height(); iy++)
   {
-    assert((y+iy)*width() >= 0);
-    assert((y+iy)*width()+paste_width <= width()*height());
+    assert(x+(y+iy)*width() >= 0);
+    assert(x+(y+iy)*width()+paste_width <= width()*height());
     assert(iy*img.width() >= 0);
     assert(iy*img.width()+paste_width <= img.width()*img.height());
-    memcpy(_data+(y+iy)*width(), img._data+iy*img.width(), sizeof(rgba32)*paste_width);
+    memcpy(_data+x+(y+iy)*width(), img._data+iy*img.width(), sizeof(rgba32)*paste_width);
   }
 }
 void ImageData::serialize(Stream s)

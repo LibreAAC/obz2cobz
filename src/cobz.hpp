@@ -114,15 +114,15 @@ struct COBZ
     return self;
   }
   
-  Obj* has_texture_with_id(const char* id)
+  int has_texture_with_id(const char* id)
   {
     const u32 l = textures.len();
     for (u32 i = 0; i < l; i++)
     {
       if (str_eq(textures[i].obz_tex_id.data(), id))
-        return textures.data() + i;
+        return i;
     }
-    return nullptr;
+    return -1;
   }
   ivec2 gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf);
   void gen_one_spritesheet(
