@@ -313,7 +313,7 @@ void* _image_preloader_batch(
 
 COBZ parse_file(const char *obz)
 {
-  constexpr int MIN_BATCH_SIZE = 256;
+  constexpr int MIN_BATCH_SIZE = 256*100000; // disabling multi-threaded load
   auto cobz = COBZ::init();
   zip_t* z = nullptr;
   int i, n, cpu_count;
@@ -473,15 +473,18 @@ fprintf(stderr, "WARN: Retrieving number of core failed, defaulting to 4.\n");
       for (int j = 0; j < cell_count; j++)
       {
         Cell& cell = board.cells[j];
-        const int p = cobz.has_texture_with_id(cell.obz_tex_id.data());
-        if (p != -1)
+        if (!cell.obz_tex_id.is_empty())
         {
-          cell.tex_id = p;
-        }
-        else
-        {
-          printf("WARN: texture with id [%s] not found !\n", cell.obz_tex_id.data());
-          cell.tex_id = -1;
+          const int p = cobz.has_texture_with_id(cell.obz_tex_id.data());
+          if (p != -1)
+          {
+            cell.tex_id = p;
+          }
+          else
+          {
+            printf("WARN: texture with id [%s] not found !\n", cell.obz_tex_id.data());
+            cell.tex_id = -1;
+          }
         }
         for (int k = 0; k < board_count; k++)
         {
