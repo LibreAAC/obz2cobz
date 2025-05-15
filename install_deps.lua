@@ -6,7 +6,7 @@
 --  stb_image by nothings under public domain
 --  stb_image_write by nothings under public domain
 require("src/shared/shared")
-load_os()
+-- load_os()
 CJSON_VERSION = "1.7.18"
 PLUTOSVG_VERSION = "0.0.6"
 ZIP_VERSION = "0.3.3"
@@ -23,6 +23,14 @@ function inst_zip()
     mv("zip-"..ZIP_VERSION.."/LICENSE.txt", "licenses/zip.txt")
     rm("v"..ZIP_VERSION..".tar.gz*")
     rm("zip-"..ZIP_VERSION)
+  elseif TARGET == "WIN" then
+    shell("iwr -OutFile v"..ZIP_VERSION..".zip -Uri https://github.com/kuba--/zip/archive/refs/tags/v"..ZIP_VERSION..".zip")
+    shell("Expand-Archive v"..ZIP_VERSION..".zip -DestinationPath .")
+    shell("mkdir -p zip-"..ZIP_VERSION.."/build")
+    mv("zip-"..ZIP_VERSION.."/src/*", "include/")
+    mv("zip-"..ZIP_VERSION.."/LICENSE.txt", "licenses/zip.txt")
+    rm("v"..ZIP_VERSION..".zip*")
+    rm("zip-"..ZIP_VERSION)
   else
     todo()
   end
@@ -36,21 +44,35 @@ function inst_cjson()
     mv("cJSON-"..CJSON_VERSION.."/LICENSE", "licenses/cJSON.txt")
     rm("v"..CJSON_VERSION..".tar.gz*")
     rm("cJSON-"..CJSON_VERSION)
+  elseif TARGET == "WIN" then
+    shell("iwr -OutFile v"..CJSON_VERSION..".zip -Uri https://github.com/DaveGamble/cJSON/archive/refs/tags/v"..CJSON_VERSION..".tar.gz")
+    shell("Expand-Archive v"..CJSON_VERSION..".zip -DestinationPath .")
+    mv("cJSON-"..CJSON_VERSION.."/cJSON.*", "include/")
+    mv("cJSON-"..CJSON_VERSION.."/LICENSE", "licenses/cJSON.txt")
+    rm("v"..CJSON_VERSION..".zip*")
+    rm("cJSON-"..CJSON_VERSION)
   else
     todo()
   end
 end
 function inst_plutosvg()
   print("Download, compile and move plutosvg...")
+  if exists("plutosvg") then
+    rm("plutosvg")
+  end
+  shell("git clone --recursive https://github.com/sammycage/plutosvg.git")
   if TARGET == "LINUX" then
-    if exists("plutosvg") then
-      rm("plutosvg")
-    end
-    shell("git clone --recursive https://github.com/sammycage/plutosvg.git")
     shell("cd plutosvg && cmake -B build . && cmake --build build")
     mv("plutosvg/source/*", "include/")
     mv("plutosvg/plutovg/include/plutovg.h", "include/")
-    -- mv("plutosvg/build/plutovg/*.a", "include") -- reactivate this line if plutosvg.a is not enough
+    mv("plutosvg/build/*.a", "lib/")
+    mv("plutosvg/build/plutovg/*.a", "lib/")
+    mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
+    rm("plutosvg")
+  elseif TARGET == "WIN" then
+    shell("'cd plutosvg' -and 'cmake -B build .' -and 'cmake --build build'")
+    mv("plutosvg/source/*", "include/")
+    mv("plutosvg/plutovg/include/plutovg.h", "include/")
     mv("plutosvg/build/*.a", "lib/")
     mv("plutosvg/build/plutovg/*.a", "lib/")
     mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
@@ -64,6 +86,8 @@ function inst_stbi()
   if TARGET == "LINUX" then
     shell("wget https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image.h")
     mv("stb_image.h", "include/stb_image.h")
+  elseif TARGET == "WIN" then
+    shell("iwr -OutFile include/stb_image.h -Uri https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image.h")
   else
     todo()
   end
@@ -73,6 +97,8 @@ function inst_stbiw()
   if TARGET == "LINUX" then
     shell("wget https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image_write.h")
     mv("stb_image_write.h", "include/stb_image_write.h")
+  elseif TARGET == "WIN" then
+    shell("iwr -OutFile include/stb_image_write.h -Uri https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image_write.h")
   else
     todo()
   end
