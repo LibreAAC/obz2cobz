@@ -6,7 +6,7 @@
 --  stb_image by nothings under public domain
 --  stb_image_write by nothings under public domain
 require("src/shared/shared")
--- load_os()
+load_os()
 CJSON_VERSION = "1.7.18"
 PLUTOSVG_VERSION = "0.0.6"
 ZIP_VERSION = "0.3.3"
@@ -15,6 +15,7 @@ parse_args()
 
 function inst_zip()
   print("Download, compile and move zip...")
+  print("\n"..TARGET.."\n\n")
   if TARGET == "LINUX" then
     shell("wget https://github.com/kuba--/zip/archive/refs/tags/v"..ZIP_VERSION..".tar.gz")
     shell("tar -xzvf v"..ZIP_VERSION..".tar.gz")
@@ -25,6 +26,9 @@ function inst_zip()
     rm("zip-"..ZIP_VERSION)
   elseif TARGET == "WIN" then
     shell("iwr -OutFile v"..ZIP_VERSION..".zip -Uri https://github.com/kuba--/zip/archive/refs/tags/v"..ZIP_VERSION..".zip")
+    if exists("v"..ZIP_VERSION) then
+      rm("v"..ZIP_VERSION)
+    end
     shell("Expand-Archive v"..ZIP_VERSION..".zip -DestinationPath .")
     shell("mkdir -p zip-"..ZIP_VERSION.."/build")
     mv("zip-"..ZIP_VERSION.."/src/*", "include/")
@@ -45,8 +49,11 @@ function inst_cjson()
     rm("v"..CJSON_VERSION..".tar.gz*")
     rm("cJSON-"..CJSON_VERSION)
   elseif TARGET == "WIN" then
-    shell("iwr -OutFile v"..CJSON_VERSION..".zip -Uri https://github.com/DaveGamble/cJSON/archive/refs/tags/v"..CJSON_VERSION..".tar.gz")
+    shell("iwr -OutFile v"..CJSON_VERSION..".zip -Uri https://github.com/DaveGamble/cJSON/archive/refs/tags/v"..CJSON_VERSION..".zip")
     shell("Expand-Archive v"..CJSON_VERSION..".zip -DestinationPath .")
+    if exists("v"..CJSON_VERSION) then
+      rm("v"..CJSON_VERSION)
+    end
     mv("cJSON-"..CJSON_VERSION.."/cJSON.*", "include/")
     mv("cJSON-"..CJSON_VERSION.."/LICENSE", "licenses/cJSON.txt")
     rm("v"..CJSON_VERSION..".zip*")
@@ -70,7 +77,7 @@ function inst_plutosvg()
     mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
     rm("plutosvg")
   elseif TARGET == "WIN" then
-    shell("'cd plutosvg' -and 'cmake -B build .' -and 'cmake --build build'")
+    shell("; cd plutosvg ; cmake -B build . ; cmake --build build")
     mv("plutosvg/source/*", "include/")
     mv("plutosvg/plutovg/include/plutovg.h", "include/")
     mv("plutosvg/build/*.a", "lib/")
