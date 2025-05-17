@@ -3,7 +3,7 @@ SRC = {"cobz.cpp", "colors.cpp", "img.cpp", "tables.cpp", "shared/utils.cpp",
   "shared/list.cpp", "cjson.cpp", "obz2cobz.cpp", "parser.cpp", "stbi.cpp",
   "stbiw.cpp", "zip.cpp"
 }
-CFLAGS = "-I include -I src/shared"
+CFLAGS = "-I include -I src/shared `pkg-config --cflags libcurl`"
 LFLAGS = "-lpthread -L lib -lplutosvg -lplutovg -lcurl"
 LD_LIBRARY_PATH = ""
 
