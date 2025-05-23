@@ -3,7 +3,7 @@ SRC = {"cobz.cpp", "colors.cpp", "img.cpp", "tables.cpp", "shared/utils.cpp",
   "shared/list.cpp", "cjson.cpp", "obz2cobz.cpp", "parser.cpp", "stbi.cpp",
   "stbiw.cpp", "zip.cpp"
 }
-LFLAGS = "-lpthread -L lib -lplutosvg -lplutovg -lcurl"
+LFLAGS = "-lpthread -L lib -lplutosvg -lplutovg -lcurl -lz -lzstd -lssl -lpsl -lnghttp2 -lnghttp3 -lngtcp2 -lngtcp2_crypto_quictls -lssh2 -lcrypto -lbrotlidec -lbrotlicommon"
 LD_LIBRARY_PATH = ""
 
 load_os()
@@ -15,7 +15,7 @@ if TARGET == "LINUX" then
   CFLAGS = CFLAGS .. " `pkg-config --cflags libcurl`"
   CFLAGS = CFLAGS .. " -Wl,-rpath," .. LD_LIBRARY_PATH
 elseif TARGET == "WIN" then
-  if not exists("include/curl.h") then
+  if not exists("include/curl") then
     wget("https://curl.se/windows/latest.cgi?p=win64-mingw.zip", "curl.zip")
     extract("curl.zip")
     mv("curl-*-win64-mingw/lib/*", "lib")
@@ -24,7 +24,7 @@ elseif TARGET == "WIN" then
     rm("curl.zip")
     rm("curl-*-win64-mingw")
   end
-  CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
+  -- CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
 else
   todo()
 end
