@@ -87,18 +87,9 @@ function inst_plutosvg()
     mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
     rm("plutosvg")
   elseif TARGET == "WIN" then
-    shell("; cd plutosvg ; cmake -B build . ; cmake --build build")
-    mv("plutosvg/source/*", "include/")
-    mv("plutosvg/plutovg/include/plutovg.h", "include/")
-    mv("plutosvg/build/*.a", "lib/")
-    mv("plutosvg/build/plutovg/*.a", "lib/")
-    mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
-    rm("plutosvg")
-  elseif TARGET == "WIN" then
     if exists("plutosvg") then
       rm("plutosvg")
     end
-    shell("git clone --recursive https://github.com/sammycage/plutosvg.git")
     shell("cd plutosvg && cmake -B build . "..CMAKE_FLAGS.." && cmake --build build "..CMAKE_FLAGS)
     mv("plutosvg/source/*", "include/")
     mv("plutosvg/plutovg/include/plutovg.h", "include/")
