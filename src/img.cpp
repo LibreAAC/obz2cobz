@@ -1,4 +1,8 @@
+#ifdef _WIN32
+#undef _WIN32
 #include "plutosvg.h"
+#define _WIN32
+#endif
 #include "tables.hpp"
 #include "utils.hpp"
 #include "img.hpp"
