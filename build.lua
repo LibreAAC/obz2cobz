@@ -12,6 +12,7 @@ ensure_folder("temp")
 CFLAGS = "-I include -I src/shared"
 if TARGET == "LINUX" then
   CFLAGS = CFLAGS .. " `pkg-config --cflags libcurl`"
+  CFLAGS = CFLAGS .. " -Wl,-rpath," .. LD_LIBRARY_PATH
 elseif TARGET == "WIN" then
   if not exists("include/curl.h") then
     wget("https://curl.se/windows/latest.cgi?p=win64-mingw.zip", "curl.zip")
@@ -22,10 +23,10 @@ elseif TARGET == "WIN" then
     rm("curl.zip")
     rm("curl-*-win64-mingw")
   end
+  CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
 else
   todo()
 end
-CFLAGS = CFLAGS .. " -Wl,-rpath," .. LD_LIBRARY_PATH
 local objs = ""
 local clangd_shit = "["
 for i,p in pairs(SRC) do
