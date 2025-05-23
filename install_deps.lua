@@ -94,7 +94,7 @@ function inst_plutosvg()
     mv("plutosvg/build/*.a", "lib/")
     mv("plutosvg/build/plutovg/*.a", "lib/")
     mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
-    rm("plutosvg")
+    -- rm("plutosvg")
   else
     todo()
   end
