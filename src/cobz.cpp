@@ -28,7 +28,7 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
     int downscale_factor = 0;
     objs[i]->rect.w = objs[i]->img.width();
     objs[i]->rect.h = objs[i]->img.height();
-    while (objs[i]->rect.w > 300)
+    while (objs[i]->rect.w > 500)
     {
       objs[i]->rect.w = floorf(objs[i]->rect.w / 2);
       objs[i]->rect.h = floorf(objs[i]->rect.h / 2);
@@ -125,6 +125,7 @@ ivec2 COBZ::gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf)
   }
   return ssdims;
 }
+
 void COBZ::gen_one_spritesheet(
   ImageData& buffer,
   list<Obj*>& objs,
