@@ -3,7 +3,7 @@ SRC = {"cobz.cpp", "colors.cpp", "img.cpp", "tables.cpp", "shared/utils.cpp",
   "shared/list.cpp", "cjson.cpp", "obz2cobz.cpp", "parser.cpp", "stbi.cpp",
   "stbiw.cpp", "zip.cpp"
 }
-LFLAGS = "-lpthread -L lib -static -lplutosvg -lplutovg -lcurl -lz -lzstd -lssl -lpsl -lnghttp2 -lnghttp3 -lngtcp2 -lngtcp2_crypto_quictls -lssh2 -lcrypto -lbrotlidec -lbrotlicommon"
+LFLAGS = "-lpthread -L lib -static -lplutosvg -lplutovg -lcurl -lz -lzstd -lssl -lpsl -lnghttp2 -lnghttp3 -lngtcp2 -lngtcp2_crypto_quictls -lssh2 -lbrotlidec -lbrotlicommon"
 LD_LIBRARY_PATH = ""
 
 load_os()
