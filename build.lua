@@ -9,6 +9,7 @@ LD_LIBRARY_PATH = ""
 load_os()
 parse_args()
 ensure_folder("temp")
+ensure_folder("temp/shared")
 CFLAGS = "-I include -I src/shared"
 if TARGET == "LINUX" then
   CFLAGS = CFLAGS .. " `pkg-config --cflags libcurl`"
