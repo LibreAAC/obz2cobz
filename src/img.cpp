@@ -3,7 +3,6 @@
 #include "plutosvg.h"
 #define _WIN32
 #endif
-#define CURL_STATICLIB
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include "tables.hpp"
