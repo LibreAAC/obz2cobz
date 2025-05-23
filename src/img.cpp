@@ -1,10 +1,11 @@
 #ifdef _WIN32
 #undef _WIN32
 #include "plutosvg.h"
-#include <curl/curl.h>
-#include <curl/easy.h>
 #define _WIN32
 #endif
+#define CURL_STATICLIB
+#include <curl/curl.h>
+#include <curl/easy.h>
 #include "tables.hpp"
 #include "utils.hpp"
 #include "img.hpp"
