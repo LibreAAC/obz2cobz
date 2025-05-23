@@ -3,7 +3,8 @@ SRC = {"cobz.cpp", "colors.cpp", "img.cpp", "tables.cpp", "shared/utils.cpp",
   "shared/list.cpp", "cjson.cpp", "obz2cobz.cpp", "parser.cpp", "stbi.cpp",
   "stbiw.cpp", "zip.cpp"
 }
-LFLAGS = "-lpthread -L lib -static -lplutosvg -lplutovg -lcurl -lz -lzstd -lssl -lpsl -lnghttp2 -lnghttp3 -lngtcp2 -lngtcp2_crypto_quictls -lssh2 -lbrotlidec -lbrotlicommon"
+-- -lplutosvg -lplutovg -lcurl -lz -lzstd -lssl -lpsl -lnghttp2 -lnghttp3 -lngtcp2 -lngtcp2_crypto_quictls -lssh2 -lbrotlidec -lbrotlicommon
+LFLAGS = "-L lib '-Wl,-Bstatic' -lplutosvg -lpluto '-Wl,Bdynamic' -lcurl-x64"
 LD_LIBRARY_PATH = ""
 
 load_os()
@@ -21,10 +22,11 @@ elseif TARGET == "WIN" then
     mv("curl-*-win64-mingw/lib/*", "lib")
     mv("curl-*-win64-mingw/include/*", "include")
     mv("curl-*-win64-mingw/COPYING.txt", "licenses/curl.txt")
+    mv("curl-*-win64-mingw/bin", "licenses/curl.txt")
     rm("curl.zip")
     rm("curl-*-win64-mingw")
   end
-  -- CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
+  CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
 else
   todo()
 end
