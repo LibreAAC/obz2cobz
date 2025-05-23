@@ -1,6 +1,8 @@
 #ifdef _WIN32
 #undef _WIN32
 #include "plutosvg.h"
+#include <curl/curl.h>
+#include <curl/easy.h>
 #define _WIN32
 #endif
 #include "tables.hpp"
@@ -8,9 +10,7 @@
 #include "img.hpp"
 #include "stb_image.h"
 #include "stb_image_write.h"
-#include <curl/curl.h>
 #include <cassert>
-#include <curl/easy.h>
 #include "zip.h"
 
 void svg2png(ByteBuffer in, ByteBuffer& out, const char* const info)
