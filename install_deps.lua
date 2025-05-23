@@ -87,7 +87,7 @@ function inst_plutosvg()
     mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
     rm("plutosvg")
   elseif TARGET == "WIN" then
-    shell("; cd plutosvg ; cmake -B build . "..CMAKE_FLAGS.." ; cmake --build build "..CMAKE_FLAGS)
+    shell("; cd plutosvg ; cmake -B build . "..CMAKE_FLAGS.." ; cmake --build build")
     mv("plutosvg/source/*", "include/")
     mv("plutosvg/plutovg/include/plutovg.h", "include/")
     -- mv("plutosvg/build/plutovg/*.a", "include") -- reactivate this line if plutosvg.a is not enough
