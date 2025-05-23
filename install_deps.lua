@@ -27,6 +27,7 @@ end
 
 function inst_zip()
   print("Download, compile and move zip...")
+  print("\n"..TARGET.."\n\n")
   if TARGET == "LINUX" then
     wget("https://github.com/kuba--/zip/archive/refs/tags/v"..ZIP_VERSION..".tar.gz",
         "v"..ZIP_VERSION..".tar.gz")
@@ -73,15 +74,22 @@ function inst_cjson()
 end
 function inst_plutosvg()
   print("Download, compile and move plutosvg...")
+  if exists("plutosvg") then
+    rm("plutosvg")
+  end
+  shell("git clone --recursive https://github.com/sammycage/plutosvg.git")
   if TARGET == "LINUX" then
-    if exists("plutosvg") then
-      rm("plutosvg")
-    end
-    shell("git clone --recursive https://github.com/sammycage/plutosvg.git")
     shell("cd plutosvg && cmake -B build . && cmake --build build")
     mv("plutosvg/source/*", "include/")
     mv("plutosvg/plutovg/include/plutovg.h", "include/")
-    -- mv("plutosvg/build/plutovg/*.a", "include") -- reactivate this line if plutosvg.a is not enough
+    mv("plutosvg/build/*.a", "lib/")
+    mv("plutosvg/build/plutovg/*.a", "lib/")
+    mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
+    rm("plutosvg")
+  elseif TARGET == "WIN" then
+    shell("; cd plutosvg ; cmake -B build . ; cmake --build build")
+    mv("plutosvg/source/*", "include/")
+    mv("plutosvg/plutovg/include/plutovg.h", "include/")
     mv("plutosvg/build/*.a", "lib/")
     mv("plutosvg/build/plutovg/*.a", "lib/")
     mv("plutosvg/LICENSE", "licenses/plutosvg.txt")
@@ -108,6 +116,8 @@ function inst_stbi()
   if TARGET == "LINUX" or TARGET == "WIN" then
     wget("https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image.h", "stb_image.h")
     mv("stb_image.h", "include/stb_image.h")
+  elseif TARGET == "WIN" then
+    shell("iwr -OutFile include/stb_image.h -Uri https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image.h")
   else
     todo()
   end
@@ -117,6 +127,8 @@ function inst_stbiw()
   if TARGET == "LINUX" or TARGET == "WIN" then
     wget("wget https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image_write.h", "stb_image_write.h")
     mv("stb_image_write.h", "include/stb_image_write.h")
+  elseif TARGET == "WIN" then
+    shell("iwr -OutFile include/stb_image_write.h -Uri https://raw.githubusercontent.com/nothings/stb/refs/heads/master/stb_image_write.h")
   else
     todo()
   end
