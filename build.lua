@@ -12,11 +12,11 @@ ensure_folder("temp")
 ensure_folder("temp/shared")
 CFLAGS = "-I include -I src/shared"
 if TARGET == "LINUX" then
-  LFLAGS = "-L lib -lplutosvg -lpluto"
+  LFLAGS = "-L lib -lplutosvg -lplutovg"
   CFLAGS = CFLAGS .. " `pkg-config --cflags libcurl`"
   CFLAGS = CFLAGS .. " -Wl,-rpath," .. LD_LIBRARY_PATH
 elseif TARGET == "WIN" then
-  LFLAGS = "-L lib '-Wl,-Bstatic' -lplutosvg -lpluto '-Wl,Bdynamic' -lcurl-x64"
+  LFLAGS = "-L lib '-Wl,-Bstatic' -lplutosvg -lplutovg '-Wl,-Bdynamic' -lcurl-x64"
   if not exists("include/curl") then
     wget("https://curl.se/windows/latest.cgi?p=win64-mingw.zip", "curl.zip")
     extract("curl.zip")
@@ -27,7 +27,7 @@ elseif TARGET == "WIN" then
     rm("curl.zip")
     rm("curl-*-win64-mingw")
   end
-  CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
+  -- CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
 else
   todo()
 end
