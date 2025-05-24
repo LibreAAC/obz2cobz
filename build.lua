@@ -23,11 +23,10 @@ elseif TARGET == "WIN" then
     mv("curl-*-win64-mingw/lib/*", "lib")
     mv("curl-*-win64-mingw/include/*", "include")
     mv("curl-*-win64-mingw/COPYING.txt", "licenses/curl.txt")
-    mv("curl-*-win64-mingw/bin/libcurl-x64.dll", "lib")
+    mv("curl-*-win64-mingw/bin/libcurl-x64.dll", "bin")
     rm("curl.zip")
     rm("curl-*-win64-mingw")
   end
-  CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
 else
   todo()
 end
