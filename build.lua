@@ -16,7 +16,7 @@ if TARGET == "LINUX" then
   CFLAGS = CFLAGS .. " `pkg-config --cflags libcurl`"
   CFLAGS = CFLAGS .. " -Wl,-rpath," .. LD_LIBRARY_PATH
 elseif TARGET == "WIN" then
-  LFLAGS = "-L lib '-Wl,-Bstatic' -lplutosvg -lplutovg '-Wl,-Bdynamic' -lcurl-x64"
+  LFLAGS = "-L lib '-Wl,-Bstatic' -lplutosvg -lplutovg '-Wl,-Bdynamic' -L bin -lcurl-x64"
   if not exists("include/curl") then
     wget("https://curl.se/windows/latest.cgi?p=win64-mingw.zip", "curl.zip")
     extract("curl.zip")
