@@ -27,7 +27,7 @@ elseif TARGET == "WIN" then
     rm("curl.zip")
     rm("curl-*-win64-mingw")
   end
-  -- CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
+  CFLAGS = CFLAGS .. " '-Wl,-rpath," .. LD_LIBRARY_PATH .. "'"
 else
   todo()
 end
