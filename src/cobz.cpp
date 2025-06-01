@@ -214,7 +214,7 @@ void Board::serialize(Stream s)
     {
       while (pos == cells[insert_pos].obz_xy)
       {
-        assert(pos.y < h);
+        if (pos.y >= h) break;
         insert_pos++;
         pos.x++;
         if (pos.x >= w)
@@ -223,7 +223,13 @@ void Board::serialize(Stream s)
           pos.y++;
         }
       }
-      assert(pos.y < h);
+      if (pos.y >= h)
+      {
+        fprintf(stderr, "WARN: Failed to find a valid alternative position "
+                        "for cell %s. This one and all the other in this case "
+                        "will be skipped.\n", cells[0].name.data());
+        break;
+      }
       cells[0].obz_xy = pos;
       const Cell temp = cells[0];
       for (int j = 0; j < insert_pos-1; j++)
@@ -250,6 +256,8 @@ void Board::serialize(Stream s)
       pos.x = 0;
       pos.y++;
     }
+    if (pos.y >= h)
+      break;
   }
   while (pos.y < h)
   {
