@@ -2,6 +2,8 @@
 #undef _WIN32
 #include "plutosvg.h"
 #define _WIN32
+#else
+#include "plutosvg.h"
 #endif
 #include <curl/curl.h>
 #include <curl/easy.h>

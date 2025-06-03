@@ -12,8 +12,7 @@ ensure_folder("temp")
 ensure_folder("temp/shared")
 CFLAGS = "-I include -I src/shared"
 if TARGET == "LINUX" then
-  LFLAGS = "-L lib -lplutosvg -lplutovg"
-  CFLAGS = CFLAGS .. " `pkg-config --cflags libcurl`"
+  LFLAGS = "-L lib -lplutosvg -lplutovg -lcurl"
   CFLAGS = CFLAGS .. " -Wl,-rpath," .. LD_LIBRARY_PATH
 elseif TARGET == "WIN" then
   LFLAGS = "-L lib '-Wl,-Bstatic' -lplutosvg -lplutovg '-Wl,-Bdynamic' -L bin -lcurl-x64"
