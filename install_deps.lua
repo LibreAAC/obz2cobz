@@ -15,14 +15,7 @@ parse_args()
 
 CMAKE_FLAGS = ""
 if TARGET == "WIN" then
-  CMAKE_FLAGS = ("-G 'MinGW Makefiles' -DCMAKE_C_COMPILER='"..
-                popen("where gcc")..
-                "' -DCMAKE_CXX_COMPILER='"..
-                popen("where g++")..
-                "' -DCMAKE_MAKE_PROGRAM='"..
-                popen("where make")..
-                "'"
-                )
+  CMAKE_FLAGS = ("-G 'MSYS Makefiles'")
 end
 
 function inst_zip()
