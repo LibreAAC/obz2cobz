@@ -46,7 +46,9 @@ ivec2 find_position(const char* s, JSON node)
       {
         const int stoi = atoi(s);
         if (stoi == j.to_int())
+        {
           return {x, y};
+        }
       }
       else if (j.is(cJSON_NULL))
       {
@@ -56,7 +58,9 @@ ivec2 find_position(const char* s, JSON node)
       {
         assert(j.is(cJSON_String));
         if (str_eq(j.to_str(), s))
+        {
           return {x, y};
+        }
       }
     }
   }
