@@ -6,6 +6,12 @@ SRC = {"cobz.cpp", "colors.cpp", "img.cpp", "tables.cpp", "shared/utils.cpp",
 -- -lplutosvg -lplutovg -lcurl -lz -lzstd -lssl -lpsl -lnghttp2 -lnghttp3 -lngtcp2 -lngtcp2_crypto_quictls -lssh2 -lbrotlidec -lbrotlicommon
 LD_LIBRARY_PATH = ""
 
+FINAL = false
+for _, a in pairs(arg) do
+  if a == "final" then
+    FINAL = true
+  end
+end
 load_os()
 parse_args()
 ensure_folder("temp")
@@ -28,6 +34,9 @@ elseif TARGET == "WIN" then
   end
 else
   todo()
+end
+if FINAL then
+  CFLAGS = CFLAGS .. " -O3"
 end
 local objs = ""
 local clangd_shit = "["

@@ -56,8 +56,7 @@ int main(int argc, const char** argv)
       //   cobz.textures[c.tex_id].rect.x,
       //   cobz.textures[c.tex_id].rect.y,
       //   cobz.textures[c.tex_id].rect.w,
-      //   cobz.textures[c.tex_id].rect.h,
-      //   cobz.textures[c.tex_id].rect.spritesheet_id
+      //   cobz.textures[c.tex_id].rect.h
       // );
   //   }
   // }

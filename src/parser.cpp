@@ -106,7 +106,6 @@ Board parse_board(
   { // general stuff
     board.name = string::ref(obf["name"].to_str()).realloc();
     fprintf(stderr, "Loading board named %s\n", board.name.data());
-    board.parent_idx = -1;
     board.w = obf["grid"]["columns"].to_int();
     board.h = obf["grid"]["rows"].to_int();
   }

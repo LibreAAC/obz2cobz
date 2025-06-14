@@ -18,7 +18,6 @@ struct Rect
 {
   static constexpr int SERIALIZED_LENGTH = sizeof(float)*4 + sizeof(int);
   float x,y,w,h;
-  int spritesheet_id;
   bool locked;
   void serialize(Stream s);
 };
@@ -34,7 +33,7 @@ struct Obj
     self.obz_tex_id.init();
     self.obz_board_id.init();
     self.img = ImageData::init();
-    self.rect = {0.f, 0.f, 0.f, 0.f, -1, false};
+    self.rect = {0.f, 0.f, 0.f, 0.f, false};
     return self;
   }
   void destroy();
@@ -84,7 +83,7 @@ struct Cell
 struct Board
 {
   int w, h;
-  int parent_idx;
+  int ssid; // spritesheet id
   list<Cell> cells;
   string name;
   string obz_id;
@@ -127,8 +126,7 @@ struct COBZ
   ivec2 gen_spritesheet_precursors(list<Obj*>& objs, list<Fit>& fit_buf);
   void gen_one_spritesheet(
     ImageData& buffer,
-    list<Obj*>& objs,
-    int spritesheet_id
+    list<Obj*>& objs
   );
   i64 gen_and_serialize_all_spritesheets(Stream s, long seek_texs);
   void destroy();
