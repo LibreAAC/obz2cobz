@@ -83,12 +83,11 @@ struct Cell
 struct Board
 {
   int w, h;
-  int ssid; // spritesheet id
   list<Cell> cells;
   string name;
   string obz_id;
   static inline Board init() {
-    Board r = { 0, 0, -1, {}, {}, {} };
+    Board r = { 0, 0, {}, {}, {} };
     r.cells.init();
     r.name.init();
     r.obz_id.init();

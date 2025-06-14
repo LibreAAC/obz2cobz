@@ -154,11 +154,7 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
     objs.clear();
     for (int j = 0; j < textures.len(); j++)
       if (textures[j].obz_board_id == boards[i].obz_id)
-      {
-        assert(boards[i].ssid == -1 || boards[i].ssid == tex_count);
-        boards[i].ssid = tex_count;
         objs.push(&textures[j]);
-      }
     if (objs.len() == 0)
       continue;
     ssdims = gen_spritesheet_precursors(objs, fit_buf);
@@ -176,6 +172,8 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
 
     {
       fseek(s._f, seek_texs, SEEK_SET);
+      s.write_anchor("IMG");
+      s << i;
       img.serialize(s);
       seek_texs = ftell(s._f);
       img.destroy();
@@ -198,7 +196,7 @@ void COBZ::destroy()
 void Board::serialize(Stream s)
 {
   const i64 cell_count = cells.len();
-  s << w << h << ssid;
+  s << w << h;
   ivec2 pos = {0,0};
   // first give a position to cells without one
   int valid_start = 0;
@@ -281,10 +279,7 @@ void Board::destroy()
 void Cell::set_child_obz(COBZ& cobz, string& obz_id)
 { obz_child_id.hold(obz_id); }
 void Cell::set_child_idx(COBZ& cobz, int board_idx, int child_idx)
-{
-  assert(obz_child_id.len() != 0);
-  child = child_idx;
-}
+{ child = child_idx; }
 void Cell::serialize(Stream s)
 {
   i64 len;

@@ -112,7 +112,6 @@ void ImageData::serialize(Stream s)
 {
   if (_data == nullptr)
     return;
-  s.write_anchor("IMG");
   stbi_write_png_to_func(
     [](void* f_, void* data, int size)
     {
