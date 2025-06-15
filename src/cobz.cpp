@@ -171,11 +171,11 @@ i64 COBZ::gen_and_serialize_all_spritesheets(
     // fclose(temp);
 
     {
-      fseek(s._f, seek_texs, SEEK_SET);
       s.write_anchor("IMG");
-      s << i;
+      const int p = ftell(s._f);
+      printf("\nIMG <-> board %i at %i (%08x)\n", i, p, p);
+      s << (int&) i;
       img.serialize(s);
-      seek_texs = ftell(s._f);
       img.destroy();
       // sadly, because of the way stbi works, we have to destroy the image
       // and reallocate it everytime
