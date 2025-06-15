@@ -129,6 +129,7 @@ void ImageData::save(Stream s)
     [](void* f_, void* data, int size)
     {
       auto f = (FILE*)f_;
+      fwrite(&size, sizeof(int), 1, f);
       fwrite(data, size, 1, f);
     }, s._f, _w, _h, 4, _data, _w*sizeof(rgba32)
   );
